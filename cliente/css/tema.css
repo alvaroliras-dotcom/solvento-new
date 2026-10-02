@@ -1,0 +1,11 @@
+/* Solvento · fuente y colores (KIT-DE-MARCA.md §3). Va después de base.css: sus variables mandan. */
+@font-face{font-family:"Bai Jamjuree";font-weight:400;font-style:normal;font-display:swap;src:url(/fuentes/bai-jamjuree-400.woff2) format("woff2")}
+@font-face{font-family:"Bai Jamjuree";font-weight:500;font-style:normal;font-display:swap;src:url(/fuentes/bai-jamjuree-500.woff2) format("woff2")}
+@font-face{font-family:"Bai Jamjuree";font-weight:600;font-style:normal;font-display:swap;src:url(/fuentes/bai-jamjuree-600.woff2) format("woff2")}
+:root{
+  --fuente:"Bai Jamjuree";
+  --acento:#00747A;        /* Verde Solvento: botones, palabra clave, iconos (blanco encima 5,56:1) */
+  --oscuro:#0B3B3E;        /* Verde noche: bandas, pie, menú (blanco encima 12,3:1) */
+  --acento-claro:#00AFAA;  /* Turquesa de la casa: solo sobre oscuro (4,51:1 sobre el verde noche) */
+  --negro:#141414;
+}
