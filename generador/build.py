@@ -694,7 +694,7 @@ def pagina(p):
     if t == "home" and PORTADA_FOTO:
         b = PORTADA_FOTO.rsplit(".", 1)[0]
         pre = (f"/img/{b}-800.webp 800w, /img/{b}-1600.webp 1600w", "(max-width: 1240px) 100vw, 1200px")
-    return montar(T.cabeza(p, schema_de(p), robots, pre) + T.cabecera(p["url"]) + "".join(cuerpo) + T.pie())
+    return montar(T.cabeza(p, schema_de(p), robots, pre) + T.cabecera(p["url"]) + "".join(cuerpo) + T.pie(p["url"]))
 
 
 def montar(h):

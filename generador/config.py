@@ -194,7 +194,7 @@ TEXTOS = {
     "faq_etiqueta": "Preguntas",
     "faq_tarjeta": "¿Le queda alguna duda? Pregúntenos.",
     "faq_enlace": ("Todas las preguntas sobre el amianto", "/preguntas-frecuentes/"),
-    "pie_frase": "Mándenos una foto de la bajante.",
+    "pie_frase": "Mándenos una foto del problema.",
     "pie_horario": "Lunes a viernes · 9-14 y 16-18",
     "estado_abierto": "Ahora atendemos · hasta las {cierra}",
     "estado_fuera": "Ahora no atendemos · déjenos un mensaje",
@@ -230,3 +230,21 @@ NEGOCIO["valoracion"] = _R["valoracion"]
 NEGOCIO["resenas"] = str(_R["resenas"])
 RESENAS = {o["n"]: o for o in _R["todas"]}
 FICHA = f"https://maps.google.com/?cid={NEGOCIO['cid']}"
+
+
+# Frase grande del pie por página (si la URL no está, va TEXTOS["pie_frase"]).
+PIE_FRASES = {
+    "/": "Mándenos una foto de la bajante.",
+    "/retirada-amianto/": "Mándenos una foto de la bajante.",
+    "/bajantes-amianto-alcorcon/": "Mándenos una foto de la bajante.",
+    "/bajantes-amianto-leganes/": "Mándenos una foto de la bajante.",
+    "/administradores-de-fincas/": "Mándenos una foto de la bajante.",
+    "/fontaneria-comunidades/": "Mándenos una foto de la avería.",
+    "/impermeabilizacion-cubiertas/": "Mándenos una foto de la cubierta.",
+    "/trabajos-verticales/": "Mándenos una foto de la fachada.",
+    "/gas-calefaccion-comunidades/": "Mándenos una foto de la sala de calderas.",
+    "/particulares/": "Mándenos una foto de la avería.",
+    "/calderas/": "Mándenos una foto de la caldera.",
+    "/aire-acondicionado/": "Mándenos una foto del aparato.",
+    "/trabaja-con-nosotros/": "Buscamos oficiales con oficio.",
+}

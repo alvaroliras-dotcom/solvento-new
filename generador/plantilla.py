@@ -2,7 +2,7 @@
 """GYF-Archidex · Plantilla común: <head>, cabecera (opción B: menú en línea, teléfono y botón), menú del móvil,
 pie verde noche (opción C) y piezas reutilizables (iconos, botones, fotos, estado)."""
 import html, json, os, re
-from config import (VERSION, DOMINIO, GTM_ID, NEGOCIO as N, MENU, LEGALES, CREDITO, MARCA, URLS, COLOR_TEMA,
+from config import (PIE_FRASES, VERSION, DOMINIO, GTM_ID, NEGOCIO as N, MENU, LEGALES, CREDITO, MARCA, URLS, COLOR_TEMA,
                     FICHA, FUENTES_PRECARGA, texto)
 
 A = lambda s: html.escape(str(s), quote=True)
@@ -148,7 +148,7 @@ def cabecera(actual):
 
 
 # ---------- Pie (opción C): verde noche, frase de cierre gigante y teléfono; «solvento» en trazo al fondo ----------
-def pie():
+def pie(url=""):
     def lista(L):
         return "".join(f'<li><a href="{u}">{n}</a></li>' for n, u in L)
     com = next(d for n, d in MENU if n == "Comunidades")
@@ -160,7 +160,7 @@ def pie():
 <footer class="pie">
  <div class="c">
   <div class="pie__grande">
-   <p class="pie__frase">{texto("pie_frase")}</p>
+   <p class="pie__frase">{PIE_FRASES.get(url, texto("pie_frase"))}</p>
    <div class="pie__llamar"><small>{texto("pie_horario")}</small>{tel("pie__tel", "pie")}{btn_foto("btn--claro", "pie")}</div>
   </div>
   <div class="pie__cols">
