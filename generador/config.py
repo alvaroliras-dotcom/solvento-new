@@ -7,7 +7,7 @@ Regla: ante cualquier discrepancia de datos manda la ficha de Google (00-AUDITOR
 Marcadores en los textos: {pueblo}, {nombre}, {localidad}, {telefono}, {horario}, {horario_min}, {abre}, {cierra}.
 """
 
-VERSION = "2"          # sube en cada entrega: estilo.css?v=VERSION y main.js?v=VERSION
+VERSION = "3"          # sube en cada entrega: estilo.css?v=VERSION y main.js?v=VERSION
 
 # ---------- Sitio ----------
 DOMINIO = "https://solvento.es"                         # sin www (Álvaro, 29/09)

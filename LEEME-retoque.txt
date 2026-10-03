@@ -1,0 +1,7 @@
+Solvento v2 · retoque de cabecera (03/10/2026)
+25 archivos. En GitHub: Add file > Upload files y arrastra JUNTAS las carpetas que ves al abrir el zip
+(cliente, generador, sitio). No subas este LEEME.
+Cambios:
+- La cabecera ya no se esconde al bajar: se queda arriba con fondo y el menu siempre a mano.
+- Logotipo mas grande: 68 px en escritorio (56 al bajar) y 50 px en el movil (44 al bajar).
+- Arreglo en el movil: la pista de pasos del amianto ensanchaba la pagina y dejaba el menu fuera de la pantalla.

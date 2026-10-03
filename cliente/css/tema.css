@@ -17,7 +17,7 @@
   --acento-texto:#00747A;
   --acento-claro:#00AFAA;  /* turquesa de la gota: solo sobre oscuro */
   --turquesa:#00AFAA;
-  --logo-alto:52px;
+  --logo-alto:68px;
 }
 
 /* =====================================================================
@@ -228,3 +228,10 @@ select:focus{outline:2px solid var(--acento);outline-offset:1px;border-color:tra
 .pie__antes{color:#5FD6D2;font-size:clamp(1.25rem,1rem + .9vw,1.875rem);max-width:36ch}
 .pie__frase{font-size:clamp(2.75rem,1.2rem + 4.6vw,6.25rem);max-width:20ch;text-wrap:balance}
 .pie__sub{max-width:52ch}
+
+/* Logo con más presencia (Álvaro, 03/10): 68 px en escritorio, 56 al compactar; 50 en el móvil */
+.cab.con-fondo .cab__logo img,.cab.con-fondo .cab__logo-b{height:56px}
+@media (max-width:760px){:root{--logo-alto:50px}.cab.con-fondo .cab__logo img,.cab.con-fondo .cab__logo-b{height:44px}}
+
+/* El móvil no se ensancha con la pista de pasos: sin esto la página medía 1.560 px y la cabecera y el menú quedaban fuera de la pantalla */
+.amianto-sec:not(.clavada) .pasosa{contain:paint}
