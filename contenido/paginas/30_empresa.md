@@ -9,7 +9,7 @@ Entrada corta: Nave en Leganés, albañiles, fontaneros y pintores de la casa, h
 
 Solvento es una empresa de instalaciones y reparaciones de edificios con nave en Leganés que trabaja para comunidades de vecinos y administradores de fincas del sur de Madrid. Está inscrita en el RERA con el n.º 2800625 para la sustitución de bajantes de amianto, tiene seguro de responsabilidad civil de 1,3 millones de euros con MAPFRE y plantilla propia.
 
-(FOTO: equipo de albañiles y fontaneros con ropa de trabajo junto a una furgoneta — solvento-empresa-nave-leganes.jpg)
+(FOTO: furgoneta de Solvento delante de un bloque de viviendas — bajantes-amianto-alcorcon-furgoneta.jpg)
 
 ## ¿Quién hace el trabajo cuando contrata a Solvento?
 

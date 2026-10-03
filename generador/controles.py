@@ -120,6 +120,18 @@ if not os.path.exists(os.path.join(SITIO, ".htaccess")): err.append("falta .htac
 _p = os.path.join(RAIZ, "generador", "_fotos_pendientes.json")
 if os.path.exists(_p):
     for f in json.load(open(_p)): avi.append(f"foto pendiente (no está en recursos/fotos y no sale): {f}")
+# Fotos con poca resolución: se estiran a 1.600 y salen borrosas (caso nave de Solvento, 03/10)
+from PIL import Image
+_usadas = set()
+for _f in paginas.values():
+    _usadas |= set(re.findall(r"/img/([\w-]+)-1600\.jpg", open(_f, encoding="utf-8").read()))
+for _b in sorted(_usadas):
+    for _ext in (".jpg", ".jpeg", ".png", ".webp"):
+        _r = os.path.join(RAIZ, "recursos", "fotos", _b + _ext)
+        if os.path.exists(_r):
+            _w = Image.open(_r).width
+            if _w < 800: err.append(f"foto con poca resolución ({_w} px de ancho, mínimo 800): {_b}{_ext}")
+            break
 print(f"Páginas HTML: {len(paginas)}")
 print(f"ERRORES: {len(err)}"); [print("  ✗", e) for e in err[:80]]
 print(f"AVISOS: {len(avi)}"); [print("  ·", a) for a in avi[:80]]

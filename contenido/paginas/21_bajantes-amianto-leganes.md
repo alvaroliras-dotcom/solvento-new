@@ -9,7 +9,7 @@ Entrada corta: Somos de Leganés: nave en el polígono San José de Valderas. Ca
 
 Solvento cambia bajantes de amianto en comunidades de vecinos de Leganés, el municipio donde tiene su nave: calle de la Electricidad, 10, polígono San José de Valderas. Presupuesta con una foto, a menudo el mismo día, y en la mayoría de los casos hace la obra en uno o dos días. Inscrita en el RERA con el n.º 2800625.
 
-(FOTO: nave de polígono industrial con una furgoneta de empresa delante — nave-solvento-leganes-san-jose-de-valderas.jpg)
+(FOTO: sustitución de una bajante de amianto en una comunidad de Leganés — sustitucion-bajante-amianto-comunidad-leganes.jpg)
 
 ## ¿Por qué quedan tantas bajantes de uralita en Leganés?
 
