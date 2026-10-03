@@ -291,6 +291,13 @@ def render(bl, url=""):
 
 
 # ---------- Piezas de la portada (firma §2) ----------
+def cinta_html():
+    its = ["Bajantes de amianto", "Fontanería del edificio", "Cubiertas y terrazas", "Trabajos verticales", "Gas y calefacción", "RERA 2800625"]
+    gota = f'<img class="cinta__gota" src="/marca/{MARCA["gota_turquesa"]}" alt="" width="357" height="531">'
+    grupo = "".join(f'<span class="cinta__it{" cinta__it--hueco" if i % 2 else ""}">{esc(t)}</span>{gota}' for i, t in enumerate(its))
+    return f'<div class="cinta" aria-hidden="true"><div class="cinta__pista" data-cinta><div class="cinta__grupo">{grupo}</div><div class="cinta__grupo">{grupo}</div></div></div>\n'
+
+
 def portada_home(p):
     if PORTADA_FOTO:
         fondo = (f'<div class="banda-marca banda-marca--foto">\n   {foto(PORTADA_FOTO, "(max-width: 1240px) 100vw, 1200px", "banda-marca__foto", prioridad=True)}'
@@ -636,6 +643,7 @@ def pagina(p):
     USADAS.clear()
     if t == "home":
         cuerpo.append(portada_home(p))
+        cuerpo.append(cinta_html())
         dec = [c for tt, c in intro if tt == "p" and not R_FOTO.match(c)]
         cuerpo.append(estrella(dec))
         op = None

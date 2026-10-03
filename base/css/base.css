@@ -3,7 +3,7 @@
    7 contacto y formularios · 8 FAQ · 9 pie · 10 barra, cookies y apariciones · 11 tableta · 12 móvil */
 
 /* ---------- 1 · Base ---------- */
-:root{--margen:15px;--sec:140px;--cab:84px;--linea:rgba(20,20,20,.10);--linea-c:rgba(255,255,255,.16);--gris:#F4F4F4;--gris-2:#FAFAFA;
+:root{--margen:15px;--sec:140px;--cab:96px;--linea:rgba(20,20,20,.10);--linea-c:rgba(255,255,255,.16);--gris:#F4F4F4;--gris-2:#FAFAFA;
   --texto:#555;--apagado:#707070;--negro:#141414;--blanco:#fff}
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html{-webkit-text-size-adjust:100%;scroll-padding-top:calc(var(--cab) + 16px)}
@@ -64,7 +64,7 @@ h1,h2,h3{color:var(--negro);font-weight:500;letter-spacing:-.045em;line-height:1
 .cab{position:sticky;top:0;z-index:50;background:#fff;border-bottom:1px solid var(--linea);transition:box-shadow .3s}
 .cab.con-sombra{box-shadow:0 8px 24px -18px rgba(0,0,0,.35)}
 .cab__in{display:flex;align-items:center;height:var(--cab);gap:34px}
-.cab__logo img{height:40px;width:auto}
+.cab__logo img{height:56px;width:auto}
 .nav{margin-left:auto}
 .nav>ul{display:flex;align-items:center;gap:28px;list-style:none}
 .nav a,.nav__abre{font-size:16px;color:var(--negro);background:none;border:0;cursor:pointer;display:inline-flex;align-items:center;gap:6px;padding:8px 0;transition:color .3s}
@@ -414,7 +414,7 @@ h1,h2,h3{color:var(--negro);font-weight:500;letter-spacing:-.045em;line-height:1
 @media (max-width:640px){
   :root{--sec:80px;--cab:72px}
   body{padding-bottom:64px}
-  .cab__logo img{height:32px}
+  .cab__logo img{height:42px}
   .cab__btn{display:none}
   .cab__burger{margin-left:auto}
   .reticula{grid-template-columns:repeat(2,1fr)}
@@ -491,3 +491,34 @@ h1,h2,h3{color:var(--negro);font-weight:500;letter-spacing:-.045em;line-height:1
   .mapa iframe{height:380px}
 }
 @media (prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}.js .rv{opacity:1;transform:none}}
+
+/* ===== 13 · CAPA VIVA (03/10/2026, Álvaro: «le falta gracia»). Sin librerías; sin JS o con movimiento reducido, todo quieto ===== */
+/* Fotos: se destapan de abajo arriba y luego flotan dentro de su marco */
+.js .fx{display:block;overflow:hidden;clip-path:inset(100% 0 0 0);transition:clip-path 1.2s cubic-bezier(.77,0,.18,1)}
+.js .fx img{scale:1.3;transition:scale 1.6s cubic-bezier(.215,.61,.355,1)}
+.js .fx.dentro{clip-path:inset(0 0 0 0)}
+.js .fx.dentro img{scale:1.12}
+.js .fx-fijo img{scale:1.12}
+.fx img,.fx-fijo img{will-change:translate}
+/* Titulares: cada palabra sube desde detrás de una línea */
+.pal{display:inline-block;overflow:hidden;vertical-align:top;padding-bottom:.12em;margin-bottom:-.12em}
+.pal>span{display:inline-block;transform:translateY(110%);transition:transform 1s cubic-bezier(.215,.61,.355,1) var(--d,0s)}
+.h-viva .pal>span{transform:none}
+/* Cinta de servicios que corre y cambia de sentido con el scroll */
+.cinta{background:var(--oscuro);color:#fff;overflow:hidden;padding:30px 0;border-block:1px solid var(--linea-c)}
+.cinta__pista{display:flex;width:max-content;will-change:transform}
+.cinta__grupo{display:flex;align-items:center;flex:none}
+.cinta__it{font-size:clamp(34px,5vw,72px);font-weight:500;letter-spacing:-.03em;line-height:1;white-space:nowrap;padding:0 28px}
+.cinta__it--hueco{color:transparent;-webkit-text-stroke:1px rgba(255,255,255,.55)}
+.cinta__gota{height:.9em;width:auto;flex:none;font-size:clamp(34px,5vw,72px);animation:gota 3.2s ease-in-out infinite}
+@keyframes gota{0%,100%{transform:translateY(-4px) rotate(-6deg)}50%{transform:translateY(4px) rotate(6deg)}}
+/* Tarjetas que se inclinan hacia el ratón */
+.js .tarjeta{transform:perspective(900px) rotateX(var(--rx,0deg)) rotateY(var(--ry,0deg));transition:transform .5s cubic-bezier(.2,.7,.2,1)}
+.tarjeta::before{content:"";position:absolute;inset:0;z-index:2;pointer-events:none;background:radial-gradient(420px circle at var(--mx,50%) var(--my,50%),rgba(255,255,255,.18),transparent 45%);opacity:0;transition:opacity .4s}
+.tarjeta:hover::before{opacity:1}
+/* Sellos: entran uno detrás de otro */
+.js .banda-marca__sellos .sello{opacity:0;transform:translateY(24px);transition:opacity .8s,transform .8s cubic-bezier(.215,.61,.355,1)}
+.js .banda-marca__sellos.dentro .sello{opacity:1;transform:none}
+.js .banda-marca__sellos.dentro .sello:nth-child(2){transition-delay:.12s}
+.js .banda-marca__sellos.dentro .sello:nth-child(3){transition-delay:.24s}
+@media (prefers-reduced-motion:reduce){.js .fx{clip-path:none}.js .fx img,.js .fx-fijo img{scale:1;translate:none}.pal>span{transform:none}.cinta__gota{animation:none}.js .tarjeta{transform:none}.js .banda-marca__sellos .sello{opacity:1;transform:none}}

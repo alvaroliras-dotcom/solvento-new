@@ -243,4 +243,80 @@
     }, { rootMargin: "0px 0px -6% 0px" });
     rv.forEach(function (el) { io.observe(el); });
   }
+  /* ---------- CAPA VIVA (03/10/2026): fotos que se destapan y flotan, titular por palabras, cinta, tarjetas que se inclinan ---------- */
+  if (!reducido && "IntersectionObserver" in w) {
+    var vh = w.innerHeight;
+    w.addEventListener("resize", function () { vh = w.innerHeight; }, { passive: true });
+
+    // 1 · Fotos. Las de cabecera y la de la portada (las primeras en verse) solo flotan; el resto, además, se destapan
+    var flotan = [];
+    d.querySelectorAll("main picture").forEach(function (p) {
+      if (p.closest(".cab, .pie, .fila__foto")) return;
+      var fija = p.closest(".banda-marca, .cab-int--foto");
+      p.classList.add(fija ? "fx-fijo" : "fx");
+      flotan.push({ el: p, img: p.querySelector("img"), amp: fija ? .07 : .05 });
+    });
+    var ioF = new IntersectionObserver(function (ents) {
+      ents.forEach(function (en) { if (en.isIntersecting) { en.target.classList.add("dentro"); ioF.unobserve(en.target); } });
+    }, { rootMargin: "0px 0px -10% 0px" });
+    d.querySelectorAll(".fx, .banda-marca__sellos").forEach(function (p) { ioF.observe(p); });
+
+    // 2 · Titulares: cada palabra sube; se respeta la palabra clave en color
+    d.querySelectorAll(".h1-home, .h1-int").forEach(function (h) {
+      var k = 0;
+      (function partir(n) {
+        [].slice.call(n.childNodes).forEach(function (c) {
+          if (c.nodeType === 3) {
+            var frag = d.createDocumentFragment();
+            c.textContent.split(/(\s+)/).forEach(function (t) {
+              if (!t) return;
+              if (/^\s+$/.test(t)) { frag.appendChild(d.createTextNode(t)); return; }
+              var o = d.createElement("span"), i = d.createElement("span");
+              o.className = "pal"; i.textContent = t; i.style.setProperty("--d", (k++ * .06) + "s");
+              o.appendChild(i); frag.appendChild(o);
+            });
+            n.replaceChild(frag, c);
+          } else if (c.nodeType === 1) partir(c);
+        });
+      })(h);
+      requestAnimationFrame(function () { requestAnimationFrame(function () { h.classList.add("h-viva"); }); });
+    });
+
+    // 3 · Cinta: corre sola y acelera y cambia de sentido con la rueda
+    var pistas = [].slice.call(d.querySelectorAll("[data-cinta]")), xs = pistas.map(function () { return 0; });
+    var ultimoY = w.scrollY, empuje = 0, sentido = -1;
+
+    // 4 · Bucle único: flotar fotos + cinta
+    (function bucle() {
+      var y = w.scrollY, dy = y - ultimoY; ultimoY = y;
+      if (dy) { sentido = dy > 0 ? -1 : 1; empuje = Math.min(Math.abs(dy) * .6, 18); }
+      empuje *= .92;
+      flotan.forEach(function (f) {
+        var r = f.el.getBoundingClientRect();
+        if (r.bottom < -50 || r.top > vh + 50) return;
+        var prog = (r.top + r.height / 2 - vh / 2) / (vh / 2 + r.height / 2);
+        f.img.style.translate = "0 " + (-prog * r.height * f.amp).toFixed(1) + "px";
+      });
+      pistas.forEach(function (p, i) {
+        var mitad = p.scrollWidth / 2;
+        xs[i] += sentido * (.6 + empuje);
+        if (xs[i] <= -mitad) xs[i] += mitad; if (xs[i] > 0) xs[i] -= mitad;
+        p.style.transform = "translate3d(" + xs[i].toFixed(1) + "px,0,0)";
+      });
+      requestAnimationFrame(bucle);
+    })();
+
+    // 5 · Tarjetas que se inclinan hacia el ratón (solo con ratón)
+    if (w.matchMedia("(hover: hover)").matches) {
+      d.querySelectorAll(".tarjeta").forEach(function (t) {
+        t.addEventListener("pointermove", function (e) {
+          var r = t.getBoundingClientRect(), x = (e.clientX - r.left) / r.width, y = (e.clientY - r.top) / r.height;
+          t.style.setProperty("--ry", ((x - .5) * 8).toFixed(2) + "deg");
+          t.style.setProperty("--rx", ((.5 - y) * 8).toFixed(2) + "deg");
+          t.style.setProperty("--mx", (x * 100).toFixed(1) + "%"); t.style.setProperty("--my", (y * 100).toFixed(1) + "%");
+        });
+        t.addEventListener("pointerleave", function () { t.style.setProperty("--rx", "0deg"); t.style.setProperty("--ry", "0deg"); });
+      });
+    }
+  }
 })();

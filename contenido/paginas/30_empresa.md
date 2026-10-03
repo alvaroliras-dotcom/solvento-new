@@ -11,6 +11,8 @@ Solvento es una empresa de instalaciones y reparaciones de edificios con nave en
 
 (FOTO: furgoneta de Solvento delante de un bloque de viviendas — bajantes-amianto-alcorcon-furgoneta.jpg)
 
+(FOTO: furgoneta de Solvento rotulada delante de la oficina — furgoneta-solvento-rotulada-leganes.jpg)
+
 ## ¿Quién hace el trabajo cuando contrata a Solvento?
 
 Nuestra gente. Albañiles, fontaneros y pintores de la casa.
