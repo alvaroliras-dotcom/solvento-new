@@ -1,13 +1,13 @@
 URL: /bajantes-amianto-alcorcon/
 Title: Bajantes de amianto en Alcorcón | Solvento
-Meta description: Cambiamos bajantes de amianto en comunidades de Alcorcón. RERA 2800625. Envíenos una foto y le damos presupuesto; la obra, normalmente en uno o dos días.
+Meta description: Cambiamos bajantes de amianto en comunidades de Alcorcón. RERA 2800625. La obra, normalmente en uno o dos días. Cuéntenos qué pasa.
 Keyword principal: bajantes de amianto en Alcorcón
 H1: Sustitución de bajantes de amianto en las comunidades de Alcorcón
 Etiqueta: Amianto · Alcorcón
 Entrada corta: Cambiamos la bajante de fibrocemento de su edificio de Alcorcón, desde nuestra nave de Leganés, el municipio vecino.
 ---
 
-Solvento cambia bajantes de amianto en comunidades de vecinos de Alcorcón. Su nave está en el polígono San José de Valderas de Leganés, el municipio vecino. Presupuesta con una foto, a menudo el mismo día, y en la mayoría de los casos hace la obra en uno o dos días. Inscrita en el RERA con el n.º 2800625.
+Solvento cambia bajantes de amianto en comunidades de vecinos de Alcorcón. Su nave está en el polígono San José de Valderas de Leganés, el municipio vecino. En la mayoría de los casos hace la obra en uno o dos días. Inscrita en el RERA con el n.º 2800625.
 
 (FOTO: furgoneta de empresa aparcada ante un bloque de viviendas — bajantes-amianto-alcorcon-furgoneta.jpg)
 
@@ -27,7 +27,7 @@ Alcorcón nos pilla al lado: es el municipio vecino de Leganés, donde está la 
 
 Eso, en la obra, se traduce en tres cosas:
 
-1. **Presupuesto con una foto.** Nos la manda el administrador o el presidente. A menudo contestamos el mismo día.
+1. **Nos cuenta qué pasa.** El administrador o el presidente, con una foto si puede. A menudo contestamos el mismo día.
 2. **Obra de uno o dos días** en la mayoría de los casos. Rompemos, retiramos el amianto con el plan de trabajo general aprobado, ponemos la bajante nueva, alicatamos y pintamos.
 3. **La misma gente de principio a fin.** Albañiles, fontaneros y pintores propios, todos formados en amianto. El vecino elige los azulejos; nosotros los compramos y los colocamos.
 
@@ -36,6 +36,12 @@ Eso, en la obra, se traduce en tres cosas:
 (FOTO: pared alicatada y pintada después del cambio de una bajante — bajante-amianto-alcorcon-despues.jpg)
 
 El proceso completo, con lo que pasa en cada vivienda, está en [LINK la sustitución de bajantes de amianto](/retirada-amianto/) 🔗.
+
+## ¿Qué hace falta para tocar esa bajante?
+
+Una empresa inscrita en el RERA, con plan de trabajo aprobado, personal formado y el residuo tratado como residuo peligroso, como marca el Real Decreto 396/2006. Si la empresa no lo tiene, no puede tocarla.
+
+Nosotros tenemos todo eso, y una cabina de descontaminación propia en la que hemos invertido 10.000 euros, para que ninguna fibra salga de la obra.
 
 ## ¿Qué recibe el administrador de una finca de Alcorcón?
 
@@ -66,12 +72,15 @@ FAQ
 
 **¿Trabajan en todo Alcorcón?** Sí, en todo el municipio.
 
-**¿Hay que ir a la nave a pedir presupuesto?** No. Basta con una foto de la bajante.
+**¿Hay que ir a la nave para empezar?** No. Cuéntenos qué pasa por teléfono o en el formulario, con una foto de la bajante si puede.
 
 **¿Cuánto dura la obra en un bloque de Alcorcón?** En la mayoría de los casos, uno o dos días. En edificios grandes que piden plan de trabajo específico, se lo decimos en el presupuesto.
 
 ---
 Notas para Álvaro:
+
+Reescritura del 03/10/2026: sección de la norma y la cabina.
+
 
 Cierre del paso 15 (02/10/2026):
 - Época de construcción: comprobada en la página de historia del Ayuntamiento de Alcorcón (ayto-alcorcon.es/historia): 800 viviendas en 1960, 16.525 en 1970 y 44.573 en 1980, con la llegada de emigrantes de otras regiones. Se escriben esas cifras en lugar de «se levantó muy deprisa».

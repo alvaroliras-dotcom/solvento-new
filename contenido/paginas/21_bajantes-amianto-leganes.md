@@ -1,23 +1,25 @@
 URL: /bajantes-amianto-leganes/
 Title: Bajantes de amianto en Leganés | Solvento
-Meta description: Cambiamos bajantes de amianto en comunidades de Leganés desde nuestra nave en San José de Valderas. RERA 2800625. Presupuesto con una foto.
+Meta description: Cambiamos bajantes de amianto en comunidades de Leganés desde nuestra nave en San José de Valderas. RERA 2800625. Cuéntenos qué pasa.
 Keyword principal: bajantes de amianto en Leganés
 H1: Sustitución de bajantes de amianto en las comunidades de Leganés
 Etiqueta: Amianto · Leganés
 Entrada corta: Somos de Leganés: nave en el polígono San José de Valderas. Cambiamos la bajante de uralita de su edificio.
 ---
 
-Solvento cambia bajantes de amianto en comunidades de vecinos de Leganés, el municipio donde tiene su nave: calle de la Electricidad, 10, polígono San José de Valderas. Presupuesta con una foto, a menudo el mismo día, y en la mayoría de los casos hace la obra en uno o dos días. Inscrita en el RERA con el n.º 2800625.
+Solvento cambia bajantes de amianto en comunidades de vecinos de Leganés, el municipio donde tiene su nave: calle de la Electricidad, 10, polígono San José de Valderas. En la mayoría de los casos hace la obra en uno o dos días. Inscrita en el RERA con el n.º 2800625.
 
-(FOTO: sustitución de una bajante de amianto en una comunidad de Leganés — sustitucion-bajante-amianto-comunidad-leganes.jpg)
+(FOTO: patio de luces de un bloque de viviendas, por donde bajan las bajantes — patio-de-luces-comunidad-vecinos.jpg)
 
 ## ¿Por qué quedan tantas bajantes de uralita en Leganés?
 
-Porque todo edificio de Leganés construido antes de 2002 puede tenerlas. Hasta ese año, el fibrocemento se podía instalar.
+Porque Leganés se construyó deprisa, y justo en los años del fibrocemento.
 
-El amianto se prohibió en España en 2002. Lo que se instaló antes sigue dentro de muchos edificios, tapado por el alicatado de cocinas y baños.
+Según el INE, Leganés tenía 7.655 habitantes en 1960. En 1970 pasaba de 56.000 y en 1980 de 160.000. En veinte años se levantaron San Nicasio, Zarzaquemada, El Carrascal y La Fortuna: bloques y bloques de viviendas con la bajante de uralita por dentro de las cocinas.
 
-Para un administrador, eso significa preguntas en la junta y vecinos que quieren saber qué tienen en la pared.
+El amianto se prohibió en España en 2002. Lo que se instaló antes sigue ahí, tapado por el alicatado, salvo que alguien lo haya cambiado.
+
+Por eso en Leganés la pregunta no suele ser si la bajante es de uralita. Es cuándo va a dar el primer problema: una grieta, una fuga en el techo del vecino de abajo, un olor en el patio de luces.
 
 ## ¿Qué cambia que la empresa sea de Leganés?
 
@@ -27,7 +29,7 @@ La nave está en el polígono San José de Valderas, en Leganés. Albañiles, fo
 
 En la obra se nota así:
 
-1. **Presupuesto con una foto.** A menudo, el mismo día.
+1. **Nos cuenta qué pasa.** Con una foto si puede. A menudo le contestamos el mismo día.
 2. **Obra de uno o dos días** en la mayoría de los casos, con el plan de trabajo general aprobado: no hay que esperar a tramitar uno nuevo.
 3. **Trabajo completo con gente propia.** Rompemos, retiramos el amianto, ponemos la bajante nueva, alicatamos y pintamos. El vecino elige los azulejos; nosotros los compramos y los colocamos.
 
@@ -37,6 +39,12 @@ En la obra se nota así:
 
 Cada paso, con lo que pasa en las viviendas, está en [LINK la sustitución de bajantes de amianto](/retirada-amianto/) 🔗.
 
+## ¿Qué hace falta para tocar esa bajante?
+
+Lo mismo en Leganés que en cualquier sitio: una empresa inscrita en el RERA, con plan de trabajo aprobado, personal formado y el residuo tratado como residuo peligroso, como marca el Real Decreto 396/2006.
+
+Nosotros tenemos todo eso, y una cabina de descontaminación propia en la que hemos invertido 10.000 euros. Ningún operario sale de la zona de trabajo sin pasar por ella.
+
 ## ¿Qué recibe el administrador de una finca de Leganés?
 
 Para la junta:
@@ -44,7 +52,7 @@ Para la junta:
 - **RERA n.º 2800625** y **plan de trabajo** aprobado.
 - **Certificado de residuos** del amianto retirado.
 - **Seguro de responsabilidad civil de 1,3 millones de euros con MAPFRE.**
-- **Presupuesto** hecho a partir de una foto.
+- **Presupuesto** para la junta.
 
 La Ley 7/2022 encarga a cada ayuntamiento un censo de instalaciones con amianto y un calendario para retirarlas. Lo que dice esa ley y quién paga el cambio de bajante está en [LINK preguntas frecuentes](/preguntas-frecuentes/) 🆕.
 
@@ -64,12 +72,15 @@ FAQ
 
 **¿Dónde está Solvento en Leganés?** En la calle de la Electricidad, 10, polígono San José de Valderas, 28918 Leganés.
 
-**¿Hay que ir a la nave para pedir presupuesto?** No. Basta con una foto de la bajante.
+**¿Hay que ir a la nave para empezar?** No. Cuéntenos qué pasa por teléfono o en el formulario, con una foto de la bajante si puede.
 
 **¿Trabajan en todo Leganés?** Sí, en todo el municipio.
 
 ---
 Notas para Álvaro:
+
+Reescritura del 03/10/2026: población de Leganés (INE, recogido en Wikipedia: 7.655 en 1960, más de 56.000 en 1970, más de 160.000 en 1980) y barrios de esa época; sección de la norma y la cabina. «Ningún operario sale sin pasar por ella»: es para lo que sirve; **comprobar con Isra**.
+
 
 Cierre del paso 15 (02/10/2026):
 - «Leganés pasó de pueblo a ciudad en los sesenta y setenta»: no he podido leer la página de historia del Ayuntamiento (leganes.org no se deja consultar desde aquí) ni la serie histórica del INE. Quitado. En su lugar, lo comprobado en el BOE: hasta 2002 se podía instalar fibrocemento.

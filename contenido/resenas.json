@@ -2,6 +2,64 @@
  "_fuente": "Ficha de Google de Solvento (vista de propietario), 29/09/2026. Las 61 reseñas, literales.",
  "valoracion": "4,1",
  "resenas": 61,
+ "opiniones": [
+  {
+   "n": 22,
+   "nombre": "Conchi Tapiador",
+   "titulo": "Bajante de amianto del edificio",
+   "servicio": "Comunidad de vecinos",
+   "texto": "Donde vivo tienen contratado el mantenimiento con esta empresa. Tuvieron que sustituir la bajante del edificio, es una de las empresas que están autorizadas para realizar este tipo de trabajos, ya que al ser de amianto no lo puede retirar cualquiera. Hicieron el trabajo muy eficazmente, el trozo de baño que tuvieron que picar para cambiar, al finalizar la obra quedó fenomenal ya que tiene en la misma empresa, albañiles y pintores. Ahora pienso en cambiar la caldera y lo haré con ellos, ya que tienen toda mi confianza al ser unos profesionales, además pueden hacer la revision de la caldera, al tener contratado el servicio de mantenimiento con ellos ya que es una empresa acreditada."
+  },
+  {
+   "n": 39,
+   "nombre": "Daniel Parra",
+   "titulo": "Mantenimiento de la urbanización",
+   "servicio": "Comunidad de vecinos",
+   "texto": "Todo un acierto!! Buscando empresas de mantenimiento para la urba encontramos a Solvento. Estamos encantados con el servicio que nos está ofreciendo y se nota la profesionalidad y el resultado que estamos obteniendo con el cambio. Gracias chicos."
+  },
+  {
+   "n": 36,
+   "nombre": "José A. Becerril Pérez",
+   "titulo": "Albañiles y fontaneros de la casa",
+   "servicio": "Caldera y acometida de gas",
+   "texto": "Sustitución de caldera de gasoil por caldera de gas natural, incluyendo acometida de gas y otros. Todos los profesionales magníficos, desde los albañiles a los fontaneros. Me gestionaron todo el proceso, incluyendo proyecto, licencias, gestiones con las compañías, asesoramiento etc. En palabras del inspector de la compañia de gas: \"un trabajo perfecto\". Muy recomendables."
+  },
+  {
+   "n": 24,
+   "nombre": "esther izquierdo",
+   "titulo": "Rápidos y limpios",
+   "servicio": "Trabajo en vivienda",
+   "texto": "David, Marin y el resto del equipo fueron muy profesionales. Me encanto su amabilidad y su alegria trabajando. Fueron muy rapidos y limpios con el encargo,respondiendo en todo momento cualquier duda que surgiera. Dan facilidades para poder resolver cualquier cosa. Tienen buenos precios para particulares. Sin lugar a duda,les recomiendo 100%, volveremos a contratarlos para mas reformas en nuestra casa. Ojala mas gente asi por el mundo."
+  },
+  {
+   "n": 31,
+   "nombre": "Alejandra Alba García",
+   "titulo": "Israel resolvió los imprevistos",
+   "servicio": "Fontanería",
+   "texto": "Rapidez en la ejecución de la obra y buena relación calidad-precio. Personal puntual, serio y muy amable en el trato. El responsable, Israel, resolvió con rapidez los pequeños inconvenientes q pudieron surgir. Gracias también a toda su cuadrilla de trabajadores: José, Jesús, Michael, Carlos (no recuerdo todos los nombres)...por ser, además de grandes profesionales, inmejorables personas. Ni la mascota de la casa (el gatito Letizio) , se dio cuenta q estaban haciendo obras. Totalmente recomendable."
+  },
+  {
+   "n": 4,
+   "nombre": "Irene PGa",
+   "titulo": "Lo que otros cuatro no arreglaron",
+   "servicio": "Avería",
+   "texto": "¡Super recomendada esta empresa! Estamos encantados. Teníamos un problema que en cuatro sitios no habíamos conseguido solucionar y por fin nos lo han arreglado. Los chicos super amables y de mucha confianza. Muchas gracias, repetiremos"
+  },
+  {
+   "n": 60,
+   "nombre": "Conchi Zamorano",
+   "titulo": "Materiales de primeras marcas",
+   "servicio": "Instalación",
+   "texto": "Comprometidos y realizan sus trabajos con rapidez y eficacia. Si tuviera que recomendar de una escala del 1 al 5, siendo 5 totalmente seguro, daría el 5. Materiales de calidad y primeras marcas."
+  },
+  {
+   "n": 30,
+   "nombre": "MARTIN M",
+   "titulo": "Compromiso y seriedad",
+   "servicio": "Pequeña reparación",
+   "texto": "Para una pequeña reparación como la que necesitaba, demostraron compromiso, seriedad, eficacia, rapidez, vocación de servicio y orientación al cliente. Sin ninguna duda, volveré a contar con esta empresa para contratar cualquiera de los servicios que preste."
+  }
+ ],
  "todas": [
   {
    "n": 1,
@@ -491,6 +549,5 @@
    "texto": "Son unos timadores muy caros y mal acabados materiales de segunda mano cuidado con este pirata!!! mi experiencia\nfue pésima no se lo recomendaría a nadie conocido si no quiere vivir una pesadilla desagradable",
    "servicio": ""
   }
- ],
- "opiniones": []
+ ]
 }

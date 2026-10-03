@@ -1,33 +1,45 @@
 # -*- coding: utf-8 -*-
-"""GYF-Archidex · Genera sitio/ entero a partir de contenido/. Orden: build.py → rematar.py → controles.py.
+"""GYF-Rayo · Genera sitio/ entero a partir de contenido/. Orden: build.py → rematar.py → controles.py.
+Uso:  python3 generador/build.py && python3 generador/rematar.py && python3 generador/controles.py
 
-Piezas de Archidex (007 de la biblioteca, FICHA.md) con las opciones de la firma de Solvento
-(07-FIRMA-GRAFICA/FIRMA.md) sobre la base GYF: schema, sitemap, llms.txt, estado en vivo, reseñas literales,
-FAQ, mapa por CID, cookies y GTM. Dónde está cada pieza: 007-ARCHIDEX/MAPA-DEL-TEMA.md."""
-import html, json, os, re, shutil, sys
+Piezas de Rayo (003 de la biblioteca, FICHA.md) sobre la base GYF (schema, sitemap, llms.txt, tarjeta de
+llamada, estado en vivo, reseñas desde resenas.json, FAQ, mapa por CID, cookies y GTM).
+Dónde está cada efecto: MAPA-DEL-TEMA.md."""
+import html, json, math, os, re, shutil, sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 import datos
 from datos import inline, esc
 A = lambda x: html.escape(str(x), quote=True)
-from config import (DOMINIO, NEGOCIO as N, URLS, MUNICIPIOS, NOMBRE_CORTO, MADRE, CONTACTO_INDEXABLE, PORTADA_FOTO, LEGALES,
-                    LLMS_PRINCIPALES, TEXTOS, FICHA, MARCA, SELLOS, SELLOS_NOTA, ESTRELLA_FRASE, ESTRELLA_CLAVE,
-                    ESTRELLA_BOTON, ESTRELLA_TARJETAS, FILAS_FOTO, PROPIA, CIFRAS, CIFRAS_TITULO, PAPELES_ICONOS,
-                    PIEZAS_H2, TEMAS, QUIEN, FOTO_MAX_MB, RESENAS, texto)
+from config import (DOMINIO, NEGOCIO as N, SERVICIOS_HOME, SERVICIOS_SECCION, SERVICIOS_TITULO, SERVICIOS_TEXTO,
+                    OPINIONES, URLS, PREFIJOS_MUNICIPIO, NOMBRE_CORTO, MUNICIPIOS, MUNICIPIO_ANCLA, CONTACTO_INDEXABLE,
+                    LEGALES, CONTACTO_YA, BANDA_TIT, LLMS_PRINCIPALES, LLMS_MARCAS, TEXTOS, FICHA, MARCA, OBJETO_PORTADA,
+                    CASOS, CASOS_VER, CINTA_PORTADA, CINTA_SECUNDARIA, CIFRAS, CIFRAS_EN, PASOS_ICONOS, ICONO_URL,
+                    CTA_H2, CTA_ULTIMO, ZONA_H2, HORARIO_H2, CTA_EXTRA, texto,
+                    AMIANTO_PASOS, AMIANTO_TITULO, AMIANTO_ETIQUETA, BANDA_PAGINA, RESENAS, QUIEN, FOTO_MAX_MB, MADRE,
+                    SERVICIOS_TEXTO as _ST)
+import json as _json
+ALT = _json.load(open(os.path.join(os.path.dirname(os.path.abspath(__file__)), "alt_fotos.json"), encoding="utf-8"))
 import plantilla as T
 
 RAIZ = datos.RAIZ
 SITIO = os.path.join(RAIZ, "sitio")
 PAGINAS = datos.todas()
 POR_URL = {p["url"]: p for p in PAGINAS}
-PUEBLO = dict(MUNICIPIOS)
-ALT = json.load(open(os.path.join(RAIZ, "generador", "alt_fotos.json"), encoding="utf-8"))
-NOMBRE_CORTO = dict(NOMBRE_CORTO)
 
-R_FOTO = re.compile(r"^\(FOTO:\s*(.+?)\s+—\s+([a-z0-9-]+\.jpg)\)\s*$")
-R_OPINION = re.compile(r"^\(Bloque de opiniones de Google[^)]*?n\.º\s*(\d+)")
-R_FRAG = re.compile(r"(?:Fragmento|Texto) literal:\s*«(.+)»\)\s*$")
-R_MAPA = re.compile(r"^\(Mapa de Google")
-R_FORM = re.compile(r"^(\*\*Formulario:\*\*|\[Botón\]|Línea informativa|\*\*Soy )")
+# ---------- Municipios: los de config (MUNICIPIOS) y, si hay hub, los enlaces del hub ----------
+PUEBLO = dict(MUNICIPIOS)
+_PREF = "|".join(re.escape(x) for x in PREFIJOS_MUNICIPIO) or "(?!)"
+if URLS.get("hub"):
+    for t, b in POR_URL.get(URLS["hub"], {"bloques": []})["bloques"]:
+        if t == "ul":
+            for it in b:
+                m = re.match(rf"\[(?:LINK )?(?:{_PREF}) ([^\]]+)\]\(({re.escape(URLS['municipio'])}[^)]+)\)", it)
+                if m:
+                    PUEBLO.setdefault(m.group(2), m.group(1))
+BASE = N["localidad"]
+NOMBRE_CORTO = dict(NOMBRE_CORTO)
+ES_CTA = re.compile(CTA_H2, re.I)
+ES_WIDGET = lambda c: c.startswith("(Widget de reseñas") or c.strip() == "[[RESEÑAS]]"
 
 
 def nombre(url):
@@ -38,10 +50,19 @@ def migas(url):
     if url == "/":
         return []
     cad = [("/", "Inicio")]
-    m = MADRE.get(url)
-    while m:
-        cad.insert(1, (m, nombre(m)))
-        m = MADRE.get(m)
+    if datos.tipo_de(url) == "municipio" and URLS.get("hub") and URLS["hub"] in POR_URL:
+        cad.append((URLS["hub"], nombre(URLS["hub"])))
+    elif url in MADRE:
+        m = MADRE[url]
+        if m in MADRE:
+            cad.append((MADRE[m], nombre(MADRE[m])))
+        cad.append((m, nombre(m)))
+    else:
+        partes = url.strip("/").split("/")
+        for i in range(1, len(partes)):
+            u = "/" + "/".join(partes[:i]) + "/"
+            if u in POR_URL:
+                cad.append((u, nombre(u)))
     cad.append((url, nombre(url)))
     return cad
 
@@ -51,7 +72,7 @@ def migas_html(url):
     if not c:
         return ""
     li = [f'<li><a href="{u}">{esc(n)}</a></li>' if i < len(c) - 1 else f'<li aria-current="page">{esc(n)}</li>' for i, (u, n) in enumerate(c)]
-    return f'<nav class="migas" aria-label="Migas de pan"><div class="c"><ol>{"".join(li)}</ol></div></nav>'
+    return f'<nav class="migas" aria-label="Migas de pan"><ol>{"".join(li)}</ol></nav>'
 
 
 # ---------- Schema ----------
@@ -59,49 +80,70 @@ NEG_ID = DOMINIO + "/#negocio"
 
 
 def negocio_schema():
+    area = [BASE] + [v for k, v in PUEBLO.items() if v != BASE]
     d = {
-        "@type": N["schema_tipo"], "@id": NEG_ID, "name": N["nombre"], "alternateName": N["nombre_largo"],
-        "legalName": N["razon_social"], "taxID": N["cif"], "url": DOMINIO + "/", "telephone": N["telefono_e164"],
-        "email": N["email"], "logo": DOMINIO + "/marca/" + MARCA["gota"], "image": DOMINIO + "/og-image.jpg",
-        "address": {"@type": "PostalAddress", "streetAddress": f"{N['calle']}, {N['zona_calle']}", "postalCode": N["cp"],
+        "@type": N["schema_tipo"], "@id": NEG_ID, "name": N["nombre"],
+        "alternateName": N["nombre_largo"], "legalName": N["razon_social"],
+        "url": DOMINIO + "/", "telephone": N["telefono_e164"], "email": N["email"],
+        "logo": DOMINIO + "/marca/" + MARCA["simbolo"], "image": DOMINIO + "/og-image.jpg",
+        "address": {"@type": "PostalAddress", "streetAddress": N["calle"], "postalCode": N["cp"],
                     "addressLocality": N["localidad"], "addressRegion": N["region"], "addressCountry": "ES"},
-        "openingHoursSpecification": [{"@type": "OpeningHoursSpecification", "dayOfWeek": N["dias_schema"], "opens": a, "closes": c}
-                                      for a, c in N["tramos"]],
-        "areaServed": [{"@type": "AdministrativeArea", "name": "Comunidad de Madrid"}] + [{"@type": "City", "name": n} for _, n in MUNICIPIOS],
+        "openingHoursSpecification": [{"@type": "OpeningHoursSpecification", "dayOfWeek": N["dias_schema"],
+                                       "opens": N["abre"], "closes": N["cierra"]}],
+        "areaServed": [{"@type": "City", "name": a} for a in area],
         "aggregateRating": {"@type": "AggregateRating", "ratingValue": N["valoracion"].replace(",", "."),
                             "reviewCount": int(N["resenas"]), "bestRating": "5", "worstRating": "1"},
         "geo": {"@type": "GeoCoordinates", "latitude": N["lat"], "longitude": N["lng"]},
-        "hasMap": FICHA, "sameAs": [FICHA], "knowsAbout": N["knows_about"],
-        "hasCredential": [{"@type": "EducationalOccupationalCredential", "name": "Registro de Empresas con Riesgo por Amianto (RERA) de la Comunidad de Madrid",
-                           "identifier": N["rera"]}],
+        "hasMap": FICHA, "sameAs": [FICHA],
+        "knowsAbout": N["knows_about"],
     }
+    if N.get("precio"):
+        d["priceRange"] = N["precio"]
+    if N.get("pago"):
+        d["paymentAccepted"] = N["pago"]
+    if N.get("fundacion"):
+        d["foundingDate"] = str(N["fundacion"])
+    if int(N["resenas"]) == 0:
+        del d["aggregateRating"]
+    pe = N.get("persona")
+    if pe:
+        d["founder"] = {"@type": "Person", "@id": DOMINIO + "/#" + pe["id"], "name": pe["nombre"], "jobTitle": pe["cargo"],
+                        "worksFor": {"@id": NEG_ID},
+                        "hasCredential": [{"@type": "EducationalOccupationalCredential", "name": n, "identifier": i}
+                                          for n, i in pe.get("credenciales", [])]}
     return d
 
 
 def schema_de(p):
     url = DOMINIO + p["url"]
     g = [negocio_schema(),
-         {"@type": "WebPage", "@id": url + "#pagina", "url": url, "name": p["title"], "description": p["meta"], "inLanguage": "es",
-          "isPartOf": {"@id": DOMINIO + "/#web"}, "about": {"@id": NEG_ID}, **({"dateModified": p["mod"]} if p.get("mod") else {})},
-         {"@type": "WebSite", "@id": DOMINIO + "/#web", "url": DOMINIO + "/", "name": N["nombre"], "inLanguage": "es", "publisher": {"@id": NEG_ID}}]
+         {"@type": "WebPage", "@id": url + "#pagina", "url": url, "name": p["title"], "description": p["meta"],
+          "inLanguage": "es", "isPartOf": {"@id": DOMINIO + "/#web"}, "about": {"@id": NEG_ID},
+          **({"dateModified": p["mod"]} if p.get("mod") else {})},
+         {"@type": "WebSite", "@id": DOMINIO + "/#web", "url": DOMINIO + "/", "name": N["nombre"], "inLanguage": "es",
+          "publisher": {"@id": NEG_ID}}]
     c = migas(p["url"])
     if c:
         g.append({"@type": "BreadcrumbList", "itemListElement": [
             {"@type": "ListItem", "position": i + 1, "name": n, "item": DOMINIO + u} for i, (u, n) in enumerate(c)]})
     t = datos.tipo_de(p["url"])
-    if t in ("servicio", "municipio"):
-        area = {"@type": "City", "name": PUEBLO[p["url"]]} if t == "municipio" else {"@type": "AdministrativeArea", "name": "Comunidad de Madrid"}
-        g.append({"@type": "Service", "name": p["h1"], "serviceType": p["keyword"] or N["servicio_tipo"], "provider": {"@id": NEG_ID},
-                  "url": url, "areaServed": area})
+    if t in ("servicio", "marca", "municipio"):
+        g.append({"@type": "Service", "name": p["h1"], "serviceType": N["servicio_tipo"], "provider": {"@id": NEG_ID},
+                  "url": url, "areaServed": {"@type": "City", "name": PUEBLO.get(p["url"], BASE)}})
     if p["faq"]:
         g.append({"@type": "FAQPage", "mainEntity": [
-            {"@type": "Question", "name": q, "acceptedAnswer": {"@type": "Answer", "text": plano(a)}} for q, a in p["faq"]]})
+            {"@type": "Question", "name": q, "acceptedAnswer": {"@type": "Answer", "text": re.sub(r"<[^>]+>", "", inline(a))}}
+            for q, a in p["faq"]]})
     return {"@context": "https://schema.org", "@graph": g}
 
 
-# ---------- Utilidades ----------
+# ---------- Utilidades de texto ----------
 def plano(txt):
     return re.sub(r"<[^>]+>", "", inline(txt))
+
+
+def palabras(txt):
+    return len(plano(re.sub(r"\[(?:LINK )?([^\]]+)\]\([^)]+\)", r"\1", txt)).split())
 
 
 def slug(t):
@@ -110,22 +152,19 @@ def slug(t):
     return re.sub(r"[^a-z0-9]+", "-", s).strip("-")[:48] or "seccion"
 
 
-def clave(t, k):
-    """Opción C de la firma: la palabra clave del titular va en verde (en turquesa sobre oscuro)."""
-    t = esc(t)
-    if k and esc(k) in t:
-        return t.replace(esc(k), f'<span class="k">{esc(k)}</span>', 1)
-    return t
-
-
-def h2_clave(t):
-    """H2 en forma de pregunta: la segunda mitad (desde la última coma o tras el verbo) en verde."""
-    pt = plano(t)
-    w = pt.rstrip("?").split()
+def h2_gris(t):
+    """R11 · Rayo: la segunda mitad del titular va en gris y se enciende palabra a palabra con el scroll.
+    Sin JS o con movimiento reducido se ve entero en negro."""
+    w = plano(t).split()
     if len(w) < 3:
-        return esc(pt)
-    k = " ".join(w[len(w) // 2 + (len(w) % 2):]) + ("?" if pt.endswith("?") else "")
-    return clave(pt, k)
+        return esc(plano(t))
+    k = max(1, math.ceil(len(w) * .5))
+    return f'{esc(" ".join(w[:k]))} <span class="gris">{esc(" ".join(w[k:]))}</span>'
+
+
+def h2c(t):
+    """Clase del H2 de sección: los titulares largos (preguntas) van arriba a lo ancho, a menor tamaño."""
+    return "h2 enciende" + (" h2--largo" if len(plano(t)) > 32 else "")
 
 
 def secciones(bl):
@@ -140,290 +179,251 @@ def secciones(bl):
     return intro, secs
 
 
-PENDIENTES = set()
-
-
-def hay_foto(f):
-    ok = os.path.exists(os.path.join(RAIZ, "recursos", "fotos", f))
-    if not ok:
-        PENDIENTES.add(f)
-    return ok
-
-
-def fotos_de(bl):
-    return [R_FOTO.match(c).group(2) for t, c in bl if t == "p" and R_FOTO.match(c) and hay_foto(R_FOTO.match(c).group(2))]
-
-
-def ancha(f):
-    """Solo una foto de 1.200 px o más va a la cabecera a sangre."""
-    return T.medida(f)[0] >= 1200
-
-
-def alt(archivo):
-    if archivo not in ALT:
-        raise SystemExit(f"build: falta el texto alternativo de {archivo} en generador/alt_fotos.json")
-    return ALT[archivo]
-
-
-def foto(archivo, sizes="(max-width: 900px) 100vw, 60vw", clase="", prioridad=False):
-    return T.foto(archivo, alt(archivo), sizes, prioridad, clase)
-
-
-USADAS = set()   # fotos ya puestas en la página (cabecera y entrada): no se repiten en el cuerpo
-
 # ---------- Bloques de texto → HTML ----------
 SOLO_ENLACE = re.compile(r"^\s*\[(?:LINK )?[^\]]+\]\([^)]+\)\s*(🔗|🆕)?\s*$")
-NEGRITA_INICIO = re.compile(r"^\*\*(.+?)\*\*[,.:]?\s*(.*)$")
+FILA = re.compile(r"^\*\*(.+?)\*\*\s*(.+)$")
+URL_1 = re.compile(r"\]\((/[^)]*)\)")
+ETQ_URL = {u: e for _, _, u, _, e, _ in SERVICIOS_HOME}
 
 
-def lista_html(items):
-    """Lista con negrita al principio → «papeles» con check y línea (piezas de la ficha de servicio)."""
-    if all(NEGRITA_INICIO.match(x) for x in items):
-        li = []
-        for x in items:
-            m = NEGRITA_INICIO.match(x)
-            li.append(f'<li class="rv">{T.ico("check")}<span><strong>{inline(m.group(1))}</strong> {inline(m.group(2))}</span></li>')
-        return f'<ul class="papeles">{"".join(li)}</ul>'
-    if all(SOLO_ENLACE.match(x) for x in items):
-        li = []
-        for x in items:
-            m = re.search(r"\[(?:LINK )?([^\]]+)\]\(([^)]+)\)", x)
-            li.append(f'<li><a href="{m.group(2)}"><span>{esc(m.group(1))}</span><i>{T.ico("flecha-diagonal")}</i></a></li>')
-        return f'<ul class="enlaces">{"".join(li)}</ul>'
-    return '<ul class="lista">' + "".join(f"<li>{inline(x)}</li>" for x in items) + "</ul>"
+def filas_html(items, clase=""):
+    """«**Título.** texto» seguidos (3 o más) → filas de Rayo con línea, icono y «/ 01» (R27: las demás se apagan)."""
+    out = []
+    for i, (tit, cuerpo) in enumerate(items, 1):
+        m = URL_1.search(cuerpo)
+        u = m.group(1) if m else None
+        ic = T.ico(ICONO_URL[u]) if u in ICONO_URL else T.simbolo()
+        etq = "".join(f"<li>{esc(e)}</li>" for e in ETQ_URL.get(u, []))
+        out.append(f'<li class="fila rv"><span class="fila__ico">{ic}</span><h3 class="fila__tit">{inline(tit.rstrip(".:"))}</h3>'
+                   f'<div class="fila__txt"><p>{inline(cuerpo)}</p></div>'
+                   f'{f"<ul class=fila__etq>{etq}</ul>" if etq else ""}<span class="fila__num" aria-hidden="true">/ {i:02d}</span></li>')
+    return f'<ol class="filas {clase}">{"".join(out)}</ol>'
 
 
 def pasos_html(items):
     out = []
-    for i, it in enumerate(items, 1):
-        m = NEGRITA_INICIO.match(it)
-        if m and m.group(2)[:1].isupper():
-            tit, txt = inline(m.group(1)).rstrip("."), inline(m.group(2))
-        else:
-            tit, txt = inline(it), ""
-        out.append(f'<li class="paso rv"><span class="paso__n">({i:02d})</span><h3 class="paso__tit">{tit}</h3>'
-                   f'{f"<p class=paso__txt>{txt}</p>" if txt else ""}</li>')
-    return f'<ol class="pasos" data-n="{len(items):02d}">{"".join(out)}</ol>'
+    for i, it in enumerate(items):
+        ic = T.ico(PASOS_ICONOS[i]) if i < len(PASOS_ICONOS) else ""
+        ico_html = f'<span class="paso__ico">{ic}</span>' if ic else ""
+        out.append(f'<li class="paso{"" if ic else " paso--sin"} rv"><span class="paso__n">{i + 1:02d}</span>{ico_html}<span class="paso__txt">{inline(it)}</span></li>')
+    return f'<ol class="pasos">{"".join(out)}</ol>'
 
 
 def tabla_html(cab, filas):
-    vacia = all(not plano(h) for h in cab)
-    th = "" if vacia else "<thead><tr>" + "".join(f'<th scope="col">{inline(h)}</th>' for h in cab) + "</tr></thead>"
+    th = "".join(f'<th scope="col">{inline(h)}</th>' for h in cab)
     trs = []
     for f in filas:
         f = (f + [""] * len(cab))[:len(cab)]
-        celdas = []
-        for k, (h, c) in enumerate(zip(cab, f)):
-            tag = "th" if (vacia and k == 0) else "td"
-            sc = ' scope="row"' if tag == "th" else ""
-            celdas.append(f'<{tag}{sc} data-col="{A(plano(h))}">{inline(c)}</{tag}>')
-        trs.append("<tr>" + "".join(celdas) + "</tr>")
-    return f'<div class="tabla rv"><table>{th}<tbody>{"".join(trs)}</tbody></table></div>'
+        trs.append("<tr>" + "".join(f'<td data-col="{A(plano(h))}">{inline(c)}</td>' for h, c in zip(cab, f)) + "</tr>")
+    return f'<div class="tabla rv"><table class="tabla-datos"><thead><tr>{th}</tr></thead><tbody>{"".join(trs)}</tbody></table></div>'
 
 
-FRAG = {}   # n.º de reseña → fragmento literal elegido en el texto («Fragmento literal: «…»»)
+# ---------- Marcadores del texto (paso 13): fotos, opiniones, mapa y especificaciones de formulario ----------
+R_FOTO = re.compile(r"^\(FOTO:\s*(.+?)\s+[—-]\s+([\w.\-]+\.(?:jpe?g|png|webp))\)\s*$", re.I)
+R_OPINION = re.compile(r"^\(Bloque de opiniones.*?n\.º\s*(\d+)", re.S)
+R_FRAG = re.compile(r"(?:Fragmento|Texto) literal:\s*«(.+)»\)?\s*$", re.S)
+FORM_SPEC = ("**Formulario:**", "[Botón]", "Línea informativa", "**Soy ", "(Mapa de Google", "(Formulario")
 
 
-def opinion_html(n, clase=""):
-    o = RESENAS.get(int(n))
+def es_marcador(c):
+    return bool(R_FOTO.match(c) or R_OPINION.match(c) or c.startswith(FORM_SPEC) or ES_WIDGET(c))
+
+
+def fotos_de(bl):
+    return [R_FOTO.match(c).group(2) for t, c in bl if t == "p" and R_FOTO.match(c)]
+
+
+def alt_de(archivo, desc=""):
+    return ALT.get(archivo) or desc
+
+
+def figura(archivo, desc="", clase="foto-marco"):
+    """Foto del texto a lo ancho de la columna, con radio grande y paralaje dentro del marco (R22)."""
+    return f'<figure class="{clase} rv"><div class="foto-marco__in">{T.foto(archivo, alt_de(archivo, desc), "(max-width: 1000px) 100vw, 60vw")}</div></figure>'
+
+
+def cita(c):
+    """«(Bloque de opiniones… n.º X… Fragmento literal: «…»)» → cita grande con el nombre de quien la escribió."""
+    m = R_OPINION.match(c)
+    o = RESENAS.get(int(m.group(1))) if m else None
     if not o:
-        raise SystemExit(f"build: la reseña n.º {n} no está en contenido/resenas.json")
-    txt = FRAG.get(int(n)) or " ".join(o["texto"].split())
-    if FRAG.get(int(n)) and plano(FRAG[int(n)]).rstrip(".") not in " ".join(o["texto"].split()):
-        raise SystemExit(f"build: el fragmento de la reseña n.º {n} no es literal")
-    return f"""<figure class="opinion rv {clase}">
- <span class="opinion__comillas" aria-hidden="true">“</span>
- <blockquote><p>{esc(txt)}</p></blockquote>
- <figcaption><strong>{esc(o['nombre'])}</strong><a href="{FICHA}" rel="noopener" target="_blank">{esc(texto("opinion_fuente"))}</a></figcaption>
-</figure>"""
+        return ""
+    fr = R_FRAG.search(c)
+    txt = fr.group(1).strip() if fr else o["texto"]
+    txt = txt.strip("«»\" ")
+    return (f'<figure class="cita rv"><span class="cita__com" aria-hidden="true">“</span><blockquote><p>{esc(txt)}</p></blockquote>'
+            f'<figcaption><span class="estrellas" aria-hidden="true">★★★★★</span><strong>{esc(o["nombre"].split("“")[0].strip())}</strong>'
+            f'<a href="{FICHA}" rel="noopener" target="_blank">Opinión publicada en Google</a></figcaption></figure>')
 
 
-MAPA_EMBED = f"https://maps.google.com/maps?cid={N['cid']}&z=15&hl=es&output=embed"
-
-
-def mapa_html():
-    return (f'<div class="mapa rv"><iframe src="{MAPA_EMBED}" title="Mapa: {A(N["nombre"])}, {A(N["calle"])}, {A(N["localidad"])}" '
-            f'loading="lazy" referrerpolicy="no-referrer-when-downgrade" allowfullscreen></iframe>'
-            f'<a class="mapa__ir" href="{FICHA}" rel="noopener" target="_blank">Ver la ficha en Google Maps {T.ico("flecha-diagonal")}</a></div>')
-
-
-def render(bl, url=""):
-    """Markdown en bloques → HTML del cuerpo de una sección. Las fotos seguidas van en pareja."""
-    out, i = [], 0
+def render_bloques(bl, estructura=None):
+    """Markdown en bloques → HTML. estructura (lista) recibe lo que va a ancho completo en la home."""
+    out, i, tras = [], 0, [False]
+    def pon(h, estr=False):
+        """En la home, lo estructurado va a ancho completo; lo que viene detrás de ello, también (conserva el orden)."""
+        if estructura is not None and (estr or tras[0]):
+            estructura.append(h if estr else f'<div class="prosa blq__tras rv">{h}</div>'); tras[0] = True
+        else:
+            out.append(h)
     while i < len(bl):
         t, c = bl[i]
         if t == "p":
             if R_FOTO.match(c):
-                grupo = []
-                while i < len(bl) and bl[i][0] == "p" and R_FOTO.match(bl[i][1]):
-                    g = R_FOTO.match(bl[i][1]).group(2); i += 1
-                    if hay_foto(g) and g not in USADAS:
-                        grupo.append(g)
-                if not grupo:
-                    continue
-                USADAS.update(grupo)
-                if len(grupo) > 1:
-                    out.append('<div class="pareja">' + "".join(f'<figure class="rv">{foto(g, "(max-width: 900px) 100vw, 30vw")}</figure>' for g in grupo) + "</div>")
-                else:
-                    out.append(f'<figure class="foto-sec rv">{foto(grupo[0])}</figure>')
-                continue
+                m = R_FOTO.match(c); pon(figura(m.group(2), m.group(1)), True); i += 1; continue
             if R_OPINION.match(c):
-                fr = R_FRAG.search(c)
-                if fr:
-                    FRAG[int(R_OPINION.match(c).group(1))] = fr.group(1)
-                out.append(opinion_html(R_OPINION.match(c).group(1)))
-            elif R_MAPA.match(c):
-                out.append(mapa_html())
-            elif R_FORM.match(c):
-                pass  # la especificación del formulario: el formulario lo pone la página
-            else:
-                out.append(f'<p class="rv">{inline(c)}</p>')
+                pon(cita(c), True); i += 1; continue
+            if ES_WIDGET(c) or c.startswith(FORM_SPEC) or c.strip() in ("[[FORMULARIO]]", "[[MAPA]]"):
+                i += 1; continue
+            grupo = []
+            while i < len(bl) and bl[i][0] == "p" and FILA.match(bl[i][1]):
+                m = FILA.match(bl[i][1]); grupo.append((m.group(1), m.group(2))); i += 1
+            if len(grupo) >= 3:
+                pon(filas_html(grupo), True); continue
+            for tit, cu in grupo:
+                pon(f"<p><strong>{inline(tit)}</strong> {inline(cu)}</p>")
+            if grupo:
+                continue
+            pon(f"<p>{inline(c)}</p>")
         elif t in ("h3", "h4"):
-            out.append(f'<h3 class="h3 rv">{inline(c)}</h3>')
+            pon(f"<{t}>{inline(c)}</{t}>")
         elif t == "ul":
-            out.append(lista_html(c))
+            if all(SOLO_ENLACE.match(x) for x in c):
+                items = []
+                for x in c:
+                    m = re.search(r"\[(?:LINK )?([^\]]+)\]\(([^)]+)\)", x)
+                    items.append(f'<li><a href="{m.group(2)}">{esc(m.group(1))}{T.ico("flecha-diagonal")}</a></li>')
+                pon(f'<ul class="enlaces">{"".join(items)}</ul>', True)
+            else:
+                vin = T.simbolo("vineta")
+                pon('<ul class="lista">' + "".join(f"<li>{vin}<span>{inline(x)}</span></li>" for x in c) + "</ul>")
         elif t == "ol":
-            out.append(pasos_html(c))
+            pon(pasos_html(c), True)
         elif t == "tabla":
-            out.append(tabla_html(*c))
+            pon(tabla_html(*c), True)
         i += 1
-    return "\n".join(out)
+    return re.sub(r" {2,}", " ", "\n".join(out))
 
 
-# ---------- Piezas de la portada (firma §2) ----------
-def cinta_html():
-    its = ["Bajantes de amianto", "Fontanería del edificio", "Cubiertas y terrazas", "Trabajos verticales", "Gas y calefacción", "RERA 2800625"]
-    gota = f'<img class="cinta__gota" src="/marca/{MARCA["gota_turquesa"]}" alt="" width="357" height="531">'
-    grupo = "".join(f'<span class="cinta__it{" cinta__it--hueco" if i % 2 else ""}">{esc(t)}</span>{gota}' for i, t in enumerate(its))
-    return f'<div class="cinta" aria-hidden="true"><div class="cinta__pista" data-cinta><div class="cinta__grupo">{grupo}</div><div class="cinta__grupo">{grupo}</div></div></div>\n'
+# ---------- Piezas de Rayo ----------
+def pueblo_de(url):
+    return PUEBLO.get(url, BASE)
+
+
+def etiqueta_y_entrada(p):
+    pb = pueblo_de(p["url"])
+    muni = datos.tipo_de(p["url"]) == "municipio"
+    et = esc(p.get("etiqueta") or texto("etiqueta_portada", pueblo=pb))
+    en = inline(p["entrada_corta"]) if p.get("entrada_corta") else esc(texto("corta_municipio" if muni else "corta", pueblo=pb))
+    return et, en
+
+
+def objeto_html(clase="objeto", lcp=True):
+    """Objeto de portada (R28 flota; «3d»: módulo three.js diferido encima de la imagen fija, que es el LCP)."""
+    o = OBJETO_PORTADA
+    b = o["imagen"].rsplit(".", 1)[0]
+    carga = 'fetchpriority="high"' if lcp else 'loading="lazy" decoding="async"'
+    img = (f'<picture><source type="image/webp" srcset="/img/{b}-420.webp 420w, /img/{b}-840.webp 840w" sizes="{OBJ_SIZES}">'
+           f'<img src="/img/{b}-840.png" width="{o["ancho"]}" height="{o["alto"]}" alt="{A(o["alt"])}" {carga}></picture>')
+    extra = ""
+    if o["tipo"] == "3d" and lcp:
+        extra = f' data-objeto3d="/marca/{o["svg_3d"]}"' + (f' data-color="{o["color_3d"]}"' if o.get("color_unico") else "")
+    elif o["tipo"] == "video" and lcp and o.get("video_webm"):
+        mov = f'<source src="/objeto/{o["video_mov"]}" type=\'video/mp4; codecs="hvc1"\'>' if o.get("video_mov") else ""
+        img = (f'<video class="objeto__video" autoplay muted loop playsinline poster="/img/{b}-840.png" width="{o["ancho"]}" height="{o["alto"]}" aria-hidden="true">'
+               f'{mov}<source src="/objeto/{o["video_webm"]}" type="video/webm"></video>') + img
+    lienzo = '<div class="objeto__lienzo" aria-hidden="true"></div>' if extra and "objeto3d" in extra else ""
+    return f'<div class="{clase}" data-objeto{extra}><div class="objeto__flota">{img}{lienzo}</div></div>'
+
+
+OBJ_SIZES = "(min-width: 1600px) 500px, (min-width: 768px) 380px, 230px"
+FORMATOS_OK = {"v", "h", "g"}
+
+
+def caso_html(c, i):
+    tit, sub, img, url, fmt = c
+    fmt = fmt if fmt in FORMATOS_OK else "v"
+    if img:
+        cuerpo = T.foto(img, f"{tit}: {sub}", "(max-width: 900px) 80vw, 34vw", clase="caso__foto")
+    else:  # marcador de maqueta: la captura real va en recursos/casos/ (maqueta de dispositivo)
+        disp = "movil" if fmt == "v" else "portatil"
+        cuerpo = (f'<div class="caso__maqueta caso__maqueta--{disp} tono-{i % 3}"><span class="caso__disp"><b>{esc(tit)}</b>'
+                  f'<em>Captura real pendiente</em></span></div>')
+    ojo = f'<span class="caso__ojo" aria-hidden="true">{T.ico("flecha-diagonal")}{esc(CASOS_VER)}</span>' if url else ""
+    pie = f'<p class="caso__pie"><strong>{esc(tit)}</strong> {esc(sub)}</p>'
+    dentro = f'<div class="caso__marco">{cuerpo}{ojo}</div>{pie}'
+    if url:
+        ext = ' rel="noopener" target="_blank"' if url.startswith("http") else ""
+        dentro = f'<a href="{A(url)}"{ext}>{dentro}</a>'
+    return f'<li class="caso caso--{fmt} caso--{i}">{dentro}</li>'
+
+
+def h1_clave(h1):
+    """La zona del H1 de la portada («sur de Madrid») va en turquesa: lo que sigue al primer «en el / en la / en»."""
+    for sep in (" en el ", " en la ", " en "):
+        if sep in h1:
+            a, b = h1.split(sep, 1)
+            if len(b.split()) <= 4:
+                return f'{esc(a + sep.rstrip())} <span class="k">{esc(b)}</span>'
+    return esc(h1)
+
+
+SELLOS = [("2800625", "n.º en el RERA, con plan de trabajo general aprobado"),
+          ("20", "administradores de fincas trabajan ya con nosotros"),
+          ("1-2 días", "de obra para cambiar una bajante, en la mayoría de los casos")]
 
 
 def portada_home(p):
-    if PORTADA_FOTO:
-        fondo = (f'<div class="banda-marca banda-marca--foto">\n   {foto(PORTADA_FOTO, "(max-width: 1240px) 100vw, 1200px", "banda-marca__foto", prioridad=True)}'
-                 '\n   <span class="banda-marca__velo" aria-hidden="true"></span>')
-    else:
-        fondo = (f'<div class="banda-marca">\n   <span class="banda-marca__azulejo" aria-hidden="true"></span>'
-                 f'\n   <img class="banda-marca__gota" src="/marca/{MARCA["gota_blanca"]}" alt="" width="357" height="531">'
-                 f'\n   <img class="banda-marca__centro" src="/marca/{MARCA["gota_turquesa"]}" alt="" width="357" height="531">')
-    sellos = "".join(f'<div class="sello"><b>{esc(v)}</b><span>{esc(t)}</span></div>' for v, t in SELLOS)
-    return f"""<section class="portada" aria-labelledby="h1">
- <div class="reticula" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
- <div class="c">
-  <div class="portada__fila">
-   <div>
-    <p class="pildora">{esc(p['etiqueta'])}</p>
-    <h1 id="h1" class="h1-home">{clave(p['h1'], 'sur de Madrid')}</h1>
-   </div>
-   <div class="portada__der">
-    <p>{inline(p['entrada_corta'])}</p>
-    <div class="acciones">{T.btn_foto("", "portada")}</div>
-    <p class="portada__tel">o llame al {T.tel("", "portada", f"<b>{N['telefono']}</b>")}</p>
-   </div>
+    """Portada de Solvento (firma v2): fondo verde noche, H1 grande con la zona en turquesa, la gota en 3D a la
+    derecha (imagen fija LCP + three.js diferido), tres sellos abajo. Debajo, la galería que sube (R5)."""
+    etiqueta, corta = etiqueta_y_entrada(p)
+    sellos = "".join(f'<li class="sello-s"><strong>{esc(v)}</strong><span>{esc(t)}</span></li>' for v, t in SELLOS)
+    galeria = ""
+    if CASOS:
+        galeria = (f'<section class="galeria" aria-labelledby="galeria-tit" data-galeria><h2 class="sr" id="galeria-tit">Trabajos</h2>'
+                   f'<ul class="galeria__lista">{"".join(caso_html(c, i) for i, c in enumerate(CASOS[:7]))}</ul></section>')
+    return f"""<div class="hero{' hero--galeria' if galeria else ''}" data-hero>
+<section class="portada-s" data-portada>
+ <div class="portada-s__fondo" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
+ <div class="contenedor portada-s__in">
+  <div class="portada-s__txt" data-sale>
+   <p class="etiqueta etiqueta--claro">{T.simbolo("etiqueta__sim")}{etiqueta}</p>
+   <h1 class="h1-home">{h1_clave(p['h1'])}</h1>
+   <p class="portada-s__corta">{corta}</p>
+   <div class="acciones">{T.btn_foto("btn--turquesa btn--grande", extra=' data-zona="portada_boton"')}{T.btn_llamar("btn--linea-claro btn--grande", N['telefono'], ' data-zona="portada_boton"')}</div>
   </div>
-  {fondo}
-   <p class="banda-marca__nota">{esc(SELLOS_NOTA)}</p>
-   <div class="banda-marca__sellos">{sellos}</div>
-  </div>
+  {objeto_html("objeto objeto--portada")}
+ </div>
+ <div class="contenedor portada-s__pie" data-sale>
+  <ul class="sellos-s">{sellos}</ul>
+  <a class="portada-s__baja" href="#servicios" aria-label="Bajar a los servicios">{T.ico("flecha-derecha")}</a>
  </div>
 </section>
+{galeria}
+</div>
 """
 
 
-def estrella(dec):
-    tarj = "".join(f'<a class="tarjeta rv" href="{ESTRELLA_BOTON[1]}">{T.foto(f, a, "(max-width: 900px) 100vw, 33vw")}'
-                   f'<span class="tarjeta__et">{esc(e)}</span><span class="tarjeta__fl">{T.ico("flecha-diagonal")}</span><span class="tarjeta__tit">{esc(t)}</span></a>'
-                   for e, t, f, a in ESTRELLA_TARJETAS)
-    return f"""<section class="estrella">
- <div class="c">
-  <p class="frase rv">{clave(ESTRELLA_FRASE, ESTRELLA_CLAVE)}</p>
-  <div class="estrella__pie">
-   <span></span>
-   <div class="prosa rv">{"".join(f"<p>{inline(x)}</p>" for x in dec)}</div>
-   <div class="estrella__btn">{T.boton(ESTRELLA_BOTON[0], ESTRELLA_BOTON[1], "btn--negro")}</div>
-  </div>
-  <div class="tarjetas">{tarj}</div>
- </div>
-</section>
-"""
-
-
-def filas_serv(sec):
-    """service-6 (opción A): la tabla «Trabajo | Qué incluye» del texto → filas con número, foto en estadio,
-    título con la palabra clave en verde, texto y flecha."""
-    tabla = next((c for t, c in sec["bl"] if t == "tabla"), None)
-    ps = [c for t, c in sec["bl"] if t == "p" and not R_FOTO.match(c)]
-    filas = []
-    for i, (trab, inc) in enumerate(tabla[1] if tabla else [], 1):
-        m = re.search(r"\[(?:LINK )?([^\]]+)\]\(([^)]+)\)", trab)
-        tit, u = (m.group(1), m.group(2)) if m else (plano(trab), None)
-        f, k = FILAS_FOTO.get(u, (None, None))
-        est = f'<span class="fila__foto">{T.foto(f, "", "260px")}</span>' if f else '<span class="fila__foto fila__foto--vacia"></span>'
-        flecha = '<svg class="fila__fl" viewBox="0 0 56 56" aria-hidden="true"><path d="M4 52 52 4M16 4h36v36"/></svg>'
-        filas.append(f'<li class="rv"><a class="fila" href="{u}"><span class="fila__n">{i:02d}.</span>{est}'
-                     f'<h3 class="fila__tit">{clave(tit, k)}</h3><p class="fila__txt">{inline(inc)}</p>{flecha}</a></li>')
-    ps = [x for x in ps if not plano(x).endswith(":") and not plano(x).startswith(ESTRELLA_FRASE)]
-    lead = f'<p class="servicios__lead">{inline(ps[0])}</p>' if ps else ""
-    resto = ""
-    return f"""<section class="servicios" id="{slug(sec['h2'])}">
- <div class="c">
-  <div class="servicios__cab">
-   <p class="rotulo" aria-hidden="true"><i></i></p>
-   <h2 class="h2-rotulo">{esc(plano(sec['h2']))}</h2>
-   {T.boton("Para administradores de fincas", URLS["admin"], "btn--enlace", None)}
-  </div>
-  {lead}
-  <ol class="filas">{"".join(filas)}</ol>
-  {f'<div class="servicios__resto prosa">{resto}</div>' if resto else ""}
- </div>
-</section>
-"""
-
-
-def opinion_y_cifras(n):
-    cif = "".join(f'<div class="cifra rv"><b>{esc(v)}</b><span>{esc(t)}</span></div>' for v, t in CIFRAS)
-    return f"""<section class="opiniones" aria-label="Opinión publicada en Google">
- <div class="c">
-  {opinion_html(n, "opinion--grande")}
-  <p class="fantasma" aria-hidden="true" data-t="{A(texto("opiniones_fantasma"))}"></p>
-  <div class="cifras"><p class="cifras__tit">{clave(*CIFRAS_TITULO)}</p>{cif}</div>
- </div>
-</section>
-"""
-
-
-def papeles(sec):
-    """Hueco de los logotipos de Archidex: la lista de papeles del texto en una tira de celdas con icono."""
-    ul = next((c for t, c in sec["bl"] if t == "ul"), [])
-    celdas = []
-    for i, x in enumerate(ul):
-        m = NEGRITA_INICIO.match(x)
-        tit, txt = (m.group(1), m.group(2)) if m else (x, "")
-        ic = PAPELES_ICONOS[i] if i < len(PAPELES_ICONOS) else "check"
-        celdas.append(f'<li class="rv">{T.ico(ic)}<b>{inline(tit.rstrip(".:"))}</b><span>{inline(txt)}</span></li>')
-    ps = [c for t, c in sec["bl"] if t == "p" and not (R_FOTO.match(c) or R_OPINION.match(c) or R_MAPA.match(c))]
-    return f"""<section class="papeles-sec" id="{slug(sec['h2'])}">
- <div class="c">
-  <h2 class="h2 rv">{h2_clave(sec['h2'])}</h2>
-  {f'<p class="papeles-sec__lead rv">{inline(ps[0])}</p>' if ps else ""}
- </div>
- <ul class="tira" style="--n:{len(celdas)}">{"".join(celdas)}</ul>
- <div class="c">{"".join(f'<p class="papeles-sec__pie rv">{inline(x)}</p>' for x in ps[1:])}</div>
-</section>
-"""
-
-
-def propia(txt):
-    g, ga = PROPIA["grande"]
-    pq, pa = PROPIA["pequena"]
-    return f"""<section class="propia">
- <div class="c propia__in">
-  <div class="propia__grande rv">{T.foto(g, ga, "(max-width: 900px) 100vw, 40vw")}</div>
-  <div class="propia__txt">
-   <p class="frase rv">{clave(PROPIA["frase"], PROPIA["clave"])}</p>
-   <div class="propia__bajo">
-    <p class="rv">{inline(txt.replace(PROPIA["frase"], "").strip())}</p>
-    <div class="propia__peq rv">{T.foto(pq, pa, "240px")}</div>
+def portada_interior(p, t):
+    """Cabecera interior de `services`: etiqueta a la izquierda, H1 a la derecha con la miniatura en píldora
+    delante (icono del servicio o del municipio sobre el acento) y la llamada pegada al H1."""
+    etiqueta, corta = etiqueta_y_entrada(p)
+    u = p["url"]
+    ic = ICONO_URL.get(u)
+    if not ic and t == "municipio":
+        s = u.replace(URLS["municipio"], "").strip("/")
+        ic = s if s in T.SIMBOLOS else "ubicacion"
+    pild = T.ico(ic) if ic and ic in T.SIMBOLOS else T.simbolo()
+    pb = pueblo_de(u) if t == "municipio" else None
+    extra = T.boton(CTA_EXTRA[0], CTA_EXTRA[1], "btn--linea") if CTA_EXTRA and CTA_EXTRA[1] != u and t != "contacto" else ""
+    return f"""<section class="cab-int">
+ <div class="contenedor">
+  {migas_html(u)}
+  <div class="cab-int__grid">
+   <p class="etiqueta cab-int__etq">{T.simbolo("etiqueta__sim")}{etiqueta}</p>
+   <div class="cab-int__txt">
+    <h1 class="h1-int{' h1-int--largo' if len(p['h1']) > 44 else ''}"><span class="h1__pildora" aria-hidden="true">{pild}</span>{esc(p['h1'])}</h1>
+    <p class="cab-int__corta">{corta}</p>
+    <div class="acciones">{T.btn_foto("btn--acento", extra=' data-zona="portada_boton"') if t != "contacto" else ""}{T.btn_llamar("btn--linea", N['telefono'], ' data-zona="portada_boton"')}</div>
    </div>
   </div>
  </div>
@@ -431,75 +431,252 @@ def propia(txt):
 """
 
 
-def puntos(sec, f, a):
-    """work-6 (opción A): foto fija a la izquierda y los párrafos de la sección como puntos en círculo."""
-    ps = [c for t, c in sec["bl"] if t == "p" and not R_FOTO.match(c)]
-    pts = []
-    for i, x in enumerate(ps, 1):
-        txt = inline(x)
-        m = re.match(r"(.+?[.?!])\s+(.+)$", plano(x))
-        if m and len(m.group(1)) < 90:
-            corte = txt.find(m.group(2)[:20]) if m.group(2)[:20] in txt else -1
-            tit, cu = (txt[:corte].strip(), txt[corte:]) if corte > 0 else (txt, "")
+def foto_cab(archivo):
+    """Variación B de «al bajar»: la primera foto de la página, a sangre dentro del contenedor, radio grande y
+    paralaje ×1,5 con el scroll."""
+    if not archivo:
+        return ""
+    return (f'<div class="contenedor foto-cab"><div class="foto-cab__marco" data-foto-cab>'
+            f'{T.foto(archivo, alt_de(archivo), "100vw", prioridad=False)}</div></div>')
+
+
+DECLARA_MAX = 60
+
+
+def reparte_intro(intro):
+    ps = [c for t, c in intro if t == "p" and not es_marcador(c)]
+    ps = [x for x in ps if len(plano(re.sub(r"\[(?:LINK )?[^\]]+\]\([^)]+\)", "", x)).strip(" ·.,")) > 30]
+    dec, total = [], 0
+    for i, x in enumerate(ps):
+        w = palabras(x)
+        if i == 0 or total + w <= DECLARA_MAX + 5:
+            dec.append(x); total += w
         else:
-            tit, cu = txt, ""
-        pts.append(f'<li class="punto rv"><span class="punto__n">{i:02d}</span><div><h3 class="punto__tit">{tit}</h3>{f"<p>{cu}</p>" if cu else ""}</div></li>')
-    return f"""<section class="lunes" id="{slug(sec['h2'])}">
- <div class="c">
-  <h2 class="h2 rv">{h2_clave(sec['h2'])}</h2>
-  <div class="lunes__dos">
-   <div class="lunes__foto"><div class="lunes__fija">{T.foto(f, a, "(max-width: 900px) 100vw, 45vw")}</div></div>
-   <ol class="puntos">{"".join(pts)}</ol>
+            return dec, [("p", y) for y in ps[i:]]
+    return dec, []
+
+
+def ventajas_html(ul):
+    items = []
+    for it in ul:
+        m = re.match(r"\*\*(.+?)\*\*[,.:]?\s*(.*)", it)
+        if m:
+            items.append(f'<li class="rv">{T.ico("check")}<strong>{inline(m.group(1))}</strong><span>{inline(m.group(2))}</span></li>')
+        else:
+            items.append(f'<li class="rv">{T.ico("check")}<span>{inline(it)}</span></li>')
+    return f'<ul class="ventajas">{"".join(items)}</ul>'
+
+
+def manifiesto(p, ps, ul):
+    """Manifiesto de la home B de Rayo: «+ Quiénes somos» a la izquierda y la declaración grande a la derecha,
+    que se enciende palabra a palabra (R11); debajo, las ventajas del texto."""
+    if not ps:
+        return ""
+    txt = " ".join(inline(x) for x in ps)
+    boton = T.boton(nombre(URLS["empresa"]), URLS["empresa"], "btn--linea") if URLS["empresa"] in POR_URL and p["url"] != URLS["empresa"] else ""
+    return f"""<section class="seccion manifiesto">
+ <div class="contenedor manifiesto__in">
+  <p class="etiqueta">{T.simbolo("etiqueta__sim")}{esc(texto("declara_etiqueta"))}</p>
+  <div>
+   <p class="manifiesto__txt enciende">{txt}</p>
+   {ventajas_html(ul) if ul else ""}
+   <div class="acciones">{boton}</div>
   </div>
  </div>
 </section>
 """
 
 
-def zona(sec, f, a):
-    """blog-6: destacado con foto a la izquierda; a la derecha, los enlaces del texto en lista con flecha."""
-    ps = [c for t, c in sec["bl"] if t == "p" and not R_FOTO.match(c)]
-    enl, txt = [], []
-    for x in ps:
-        links = re.findall(r"\[(?:LINK )?([^\]]+)\]\(([^)]+)\)", x)
-        txt.append(x)
-        for tt, u in links:
-            if u != URLS["contacto"]:
-                enl.append((tt, u, x))
-    vistos, li = set(), []
-    for tt, u, x in enl:
-        if u in vistos:
-            continue
-        vistos.add(u)
-        tit = nombre(u)
-        sub = "" if plano(tt).lower() in tit.lower() else f"<small>{esc(tt)}</small>"
-        li.append(f'<li><a href="{u}"><span><b>{esc(tit)}</b>{sub}</span><i>{T.ico("flecha-diagonal")}</i></a></li>')
-    return f"""<section class="zona" id="{slug(sec['h2'])}">
- <div class="c">
-  <h2 class="h2 rv">{h2_clave(sec['h2'])}</h2>
-  <div class="zona__dos">
-   <div class="zona__dest rv">{T.foto(f, a, "(max-width: 900px) 100vw, 55vw")}<div class="prosa">{"".join(f"<p>{inline(x)}</p>" for x in txt)}</div></div>
-   <div><ul class="enlaces enlaces--zona">{"".join(li)}</ul><div class="acciones">{T.btn_foto("", "zona")}</div></div>
+def bloque_home(sec, n):
+    """Sección de la home con la anatomía de «Company»: H2 a la izquierda (5/12, segunda mitad en gris que se
+    enciende), entradilla y texto a la derecha; filas, pasos, tablas y enlaces a ancho completo debajo."""
+    estr = []
+    cuerpo = render_bloques(sec["bl"], estr)
+    partes = re.split(r"(?<=</p>)\n", cuerpo, maxsplit=1)
+    primero = partes[0].replace("<p>", '<p class="entradilla">', 1) if partes[0].startswith("<p>") else partes[0]
+    resto = partes[1] if len(partes) > 1 else ""
+    return f"""<section class="seccion blq" id="{slug(sec['h2'])}">
+ <div class="contenedor">
+  <div class="blq__cab">
+   <h2 class="{h2c(sec['h2'])}">{h2_gris(sec['h2'])}</h2>
+   <div class="blq__txt prosa rv">{primero}{resto}</div>
+  </div>
+  {"".join(estr)}
+ </div>
+</section>
+"""
+
+
+def servicios_seccion():
+    """Filas de servicios desde config (si el texto de la home no las trae ya): variación B de `services`
+    (nombre grande, texto, etiquetas; R27) y, con foto, la foto que sigue al cursor (R23)."""
+    out = []
+    for i, (t, txt, u, ic, etq, foto_s) in enumerate(SERVICIOS_HOME, 1):
+        e = "".join(f"<li>{esc(x)}</li>" for x in etq)
+        f = f'<span class="fila__foto" aria-hidden="true">{T.foto(foto_s, "", "(max-width: 900px) 90vw, 280px")}</span>' if foto_s else ""
+        out.append(f'<li class="fila fila--enlace rv{" con-foto" if foto_s else ""}"><a href="{u}"><span class="fila__ico">{T.ico(ic)}</span>'
+                   f'<h3 class="fila__tit">{esc(t)}</h3><span class="fila__txt"><span>{esc(txt)}</span></span>'
+                   f'{f"<ul class=fila__etq>{e}</ul>" if e else ""}<span class="fila__num" aria-hidden="true">/ {i:02d}</span>{f}</a></li>')
+    return f"""<section class="seccion blq servicios" id="servicios">
+ <div class="contenedor">
+  <div class="blq__cab"><h2 class="{h2c(SERVICIOS_TITULO)}">{h2_gris(SERVICIOS_TITULO)}</h2><div class="blq__txt prosa rv"><p class="entradilla">{esc(SERVICIOS_TEXTO)}</p></div></div>
+  <ol class="filas filas--serv" data-sigue>{"".join(out)}</ol>
+  <div class="cursor-foto" aria-hidden="true" data-cursor-foto></div>
+ </div>
+</section>
+"""
+
+
+def amianto_pasos(usadas=()):
+    """El cambio de una bajante, paso a paso: sección clavada que avanza de lado con el scroll (ordenador, GSAP);
+    en el móvil, tira que se desliza. Fotos de tema con lo que pasa en cada paso."""
+    li = []
+    for i, (t, txt, f) in enumerate(AMIANTO_PASOS, 1):
+        if isinstance(f, list):
+            f = next((x for x in f if x not in usadas), f[0])
+        li.append(f'<li class="pasoa"><div class="pasoa__foto">{T.foto(f, alt_de(f, t), "(max-width: 900px) 80vw, 34vw")}</div>'
+                  f'<p class="pasoa__n">{i:02d}</p><h3 class="pasoa__tit">{esc(t)}</h3><p class="pasoa__txt">{esc(txt)}</p></li>')
+    return f"""<section class="amianto-sec" id="amianto-pasos" aria-labelledby="amianto-tit" data-pasos>
+ <div class="amianto-sec__clavo">
+  <div class="contenedor amianto-sec__cab">
+   <p class="etiqueta etiqueta--claro">{T.simbolo("etiqueta__sim")}{esc(AMIANTO_ETIQUETA)}</p>
+   <h2 class="h2 amianto-sec__tit" id="amianto-tit">{esc(AMIANTO_TITULO)}</h2>
+   <div class="amianto-sec__barra" aria-hidden="true"><i data-pasos-barra></i></div>
+  </div>
+  <ol class="pasosa" data-pasos-pista>{"".join(li)}<li class="pasoa pasoa--fin"><p class="pasoa__fin">{T.simbolo("pasoa__sim")}<span>Uno o dos días de obra, en la mayoría de los casos.</span></p>{T.boton("Así lo hacemos", URLS["amianto"], "btn--linea-claro") if True else ""}</li></ol>
+ </div>
+</section>
+"""
+
+
+MESES = ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"]
+
+
+def valor_cifra(v):
+    if v == "{valoracion}":
+        return N["valoracion"], ' data-fuente="valoracion"'
+    if v == "{resenas}":
+        return N["resenas"], ' data-fuente="resenas"'
+    return v.format(anios=N["anios"], anios_marca=N["anios_marca"]), ""
+
+
+def cifras():
+    """Cifras en mosaico 2 + 2 de anchos cruzados (Rayo `mxd-stats-cards`), la primera en el acento.
+    Sin objetos 3D: un icono grande de trazo en la esquina. Cuentan al entrar (R32, sin odómetro)."""
+    import datetime
+    hoy = datetime.date.today()
+    fecha = f'<time datetime="{hoy:%Y-%m}">{MESES[hoy.month - 1]} de {hoy.year}</time>'
+    tarj = []
+    for i, (v, suf, txt, bt, ic) in enumerate(CIFRAS[:4]):
+        val, fuente = valor_cifra(v)
+        b = T.boton(bt[0], bt[1], "btn--linea btn--peq" if i else "btn--blanco btn--peq") if bt else ""
+        tarj.append(f'<div class="cifra cifra--{i} rv"><p class="cifra__n"><span data-cuenta="{A(val)}"{fuente}>{esc(val)}</span>{esc(suf)}</p>'
+                    f'<p class="cifra__t">{esc(txt)}</p>{b}<span class="cifra__deco" aria-hidden="true">{T.ico(ic)}</span></div>')
+    return f"""<section class="seccion cifras-sec" aria-label="{A(texto('cifras_etiqueta'))}">
+ <div class="contenedor">
+  <div class="blq__cab"><h2 class="h2 enciende">{h2_gris(texto("cifras_titulo"))}</h2><div class="blq__txt"><p class="cifras__fecha">{texto("cifras_fecha", fecha=fecha)}</p></div></div>
+  <div class="cifras">{"".join(tarj)}</div>
+ </div>
+</section>
+"""
+
+
+def zona_html():
+    """Cinta secundaria fina a la derecha (R14, peso 300) y la lista de enlaces a los municipios."""
+    nombres = CINTA_SECUNDARIA or ([BASE] + [n for _, n in MUNICIPIOS if n != BASE])
+    li = "".join(f'<li class="rv"><a href="{u}">{esc(MUNICIPIO_ANCLA.format(pueblo=n))}{T.ico("flecha-diagonal")}</a></li>' for u, n in MUNICIPIOS)
+    return (f'<div class="cinta-sec">{T.cinta(nombres, "cinta--fina", 1)}</div>'
+            + (f'<section class="seccion zonas-sec" aria-label="{A(texto("zona_titulo"))}"><div class="contenedor"><ul class="enlaces enlaces--zonas">{li}</ul></div></section>' if li else ""))
+
+
+def horario_html(sec):
+    txt = render_bloques(sec["bl"])
+    return f"""<section class="seccion horario-sec" id="{slug(sec['h2'])}">
+ <div class="contenedor">
+  <div class="horario">
+   <div class="horario__cab"><h2 class="h2 enciende">{h2_gris(sec['h2'])}</h2>{T.estado()}</div>
+   <p class="horario__grande"><span>{N['dias_texto']}</span><strong>{N['abre'].lstrip('0')}<em>—</em>{N['cierra'].lstrip('0')}</strong></p>
+   <div class="horario__txt prosa">{txt}<p><a class="horario__tel tel" href="tel:{N['telefono_e164']}">{T.ico("contacto")}{N['telefono']}</a></p></div>
   </div>
  </div>
 </section>
 """
 
 
-def faq_html(faq, enlace=True):
+MAPA_EMBED = f"https://maps.google.com/maps?cid={N['cid']}&z=16&hl=es&output=embed"
+
+
+def mapa():
+    return f"""<section class="seccion mapa-sec" aria-label="Dónde estamos">
+ <div class="contenedor">
+  <div class="mapa">
+   <div class="mapa__info">
+    <p class="etiqueta">{T.simbolo("etiqueta__sim")}Dónde estamos</p>
+    <h2 class="h2-lect">{texto("mapa_titular")}</h2>
+    <p class="mapa__dir">{N['calle']}<br>{N['cp']} {N['localidad']} ({N['provincia']})</p>
+    <p>{texto("mapa_texto")}</p>
+    <div class="acciones">{T.boton("Ver en Google Maps", FICHA, "btn--linea", "flecha-diagonal", ' rel="noopener" target="_blank"')}</div>
+   </div>
+   <div class="mapa__marco"><iframe src="{MAPA_EMBED}" title="Mapa: {A(N['nombre'])}, {A(N['calle'])}, {A(N['localidad'])}" loading="lazy" referrerpolicy="no-referrer-when-downgrade" allowfullscreen></iframe></div>
+  </div>
+ </div>
+</section>
+"""
+
+
+def tarjeta_opinion(o):
+    serv = esc(o.get("servicio", "")) + (f' · {esc(o["lugar"])}' if o.get("lugar") else "")
+    marca = " op--marcador" if o.get("marcador") else ""
+    return (f'<li class="op{marca}"><span class="estrellas" aria-label="5 estrellas">★★★★★</span>'
+            f'<p class="op__tit">{esc(o["titulo"])}</p><p class="op__txt">«{esc(o["texto"])}»</p>'
+            f'<div class="op__pie"><span class="op__ini" aria-hidden="true">{esc(o["nombre"][:1])}</span>'
+            f'<span class="op__quien"><strong>{esc(o["nombre"])}</strong><span>{serv or "Opinión publicada en Google"}</span></span></div></li>')
+
+
+def opiniones(pb=None, titulo=None, texto_op=""):
+    """Opiniones de la home B de Rayo: título, texto y sello de Google a la izquierda (en el sitio de Clutch),
+    carrusel de tarjetas blancas a la derecha con flechas y contador (R33 sin automático). Sello que gira con el scroll (R25)."""
+    lista = sorted(OPINIONES, key=lambda o: 0 if pb and o.get("lugar") == pb else 1)
+    titulo = titulo or esc(texto("opiniones_titular"))
+    texto_op = f'<p>{texto_op}</p>' if texto_op else ""
+    sello_t = esc(texto("opiniones_sello"))
+    _st = texto("opiniones_sello").strip(" ·")
+    SELLO_ARIA = A(f"{_st} · {_st} · Ver las reseñas en Google")
+    sello = (f'<a class="sello" href="{FICHA}" rel="noopener" target="_blank" aria-label="{SELLO_ARIA}">'
+             f'<svg class="sello__aro" viewBox="0 0 200 200" aria-hidden="true" data-gira><defs><path id="aro" d="M100,100 m-78,0 a78,78 0 1,1 156,0 a78,78 0 1,1 -156,0"/></defs>'
+             f'<text><textPath href="#aro" textLength="486" lengthAdjust="spacingAndGlyphs">{sello_t}{sello_t}</textPath></text></svg>{T.simbolo("sello__sim")}</a>')
+    carrusel = ""
+    if lista:
+        carrusel = f"""<div class="op-carril">
+   <ul class="op-lista" data-opiniones tabindex="0" aria-label="Reseñas">{"".join(tarjeta_opinion(o) for o in lista)}</ul>
+   <div class="op-ctrl"><button type="button" class="redondo" data-op="-1" aria-label="Reseña anterior">←</button><span class="op-cuenta" data-op-cuenta>1 / {len(lista)}</span><button type="button" class="redondo" data-op="1" aria-label="Reseña siguiente">→</button></div>
+  </div>"""
+    return f"""<section class="seccion opiniones-sec" id="opiniones" aria-label="Opiniones de clientes en Google">
+ <div class="contenedor opiniones">
+  <div class="opiniones__cab">
+   <p class="etiqueta">{T.simbolo("etiqueta__sim")}{esc(texto("opiniones_etiqueta"))}</p>
+   <h2 class="h2 enciende">{titulo}</h2>
+   {texto_op}
+   <div class="opiniones__nota">{T.nota("nota--grande", FICHA)}{sello}</div>
+   <div class="acciones">{T.boton("Ver todas en Google", FICHA, "btn--linea", "flecha-diagonal", ' rel="noopener" target="_blank"')}</div>
+  </div>
+  {carrusel}
+ </div>
+</section>
+"""
+
+
+def faq_html(faq):
     if not faq:
         return ""
-    items = "".join(f'<details class="rv" name="faq"{" open" if i == 1 else ""}><summary><span class="faq__n">{i:02d}</span><span>{esc(q)}</span><i aria-hidden="true"></i></summary>'
+    items = "".join(f'<details class="rv" name="faq"{" open" if i == 1 else ""}><summary><span>{esc(q)}</span><i aria-hidden="true"></i></summary>'
                     f'<div class="faq__resp"><p>{inline(a)}</p></div></details>' for i, (q, a) in enumerate(faq, 1))
-    en = texto("faq_enlace")
-    ir = f'<a class="enlace" href="{en[1]}">{esc(en[0])}</a>' if enlace else ""
-    return f"""<section class="faq" id="preguntas">
- <div class="c faq__in">
-  <div class="faq__tarj rv">
-   <p class="faq__et">{esc(texto("faq_etiqueta"))}</p>
-   <h2 class="faq__tit">{esc(texto("faq_tarjeta"))}</h2>
-   {T.tel("faq__tel", "faq")}
-   {ir}
+    return f"""<section class="seccion faq-sec" id="preguntas">
+ <div class="contenedor faq">
+  <div class="faq__cab">
+   <p class="etiqueta">{T.simbolo("etiqueta__sim")}{esc(texto("faq_etiqueta"))}</p>
+   <h2 class="h2 enciende">{h2_gris(texto("faq_titulo"))}</h2>
+   <a class="faq__tel tel" href="tel:{N['telefono_e164']}"><span>{esc(texto("faq_cta"))}</span><strong>{N['telefono']}</strong></a>
   </div>
   <div class="faq__lista">{items}</div>
  </div>
@@ -507,126 +684,149 @@ def faq_html(faq, enlace=True):
 """
 
 
-# ---------- Interiores ----------
-CTA_PAGINA = {"/trabaja-con-nosotros/": ("Apuntarme", "#presupuesto")}
+# ---------- Tarjeta «Le llamamos» (base GYF) y banda final que se abre (R21) ----------
+URL_PRIVACIDAD = next((u for n, u in LEGALES if "privacidad" in n.lower()), "/politica-de-privacidad/")
 
 
-def cab_int(p, t, foto_cab):
-    cta = CTA_PAGINA.get(p["url"])
-    boton = T.boton(cta[0], cta[1], "", "flecha-diagonal", ' data-zona="cabecera_pagina"') if cta else T.btn_foto("", "cabecera_pagina")
-    acciones = "" if t in ("contacto", "legal") else f'<div class="acciones">{boton}{T.tel("cab-int__tel", "cabecera_pagina", "o llame al " + N["telefono"])}</div>'
-    if foto_cab:
-        return f"""<section class="cab-int cab-int--foto">
- {foto(foto_cab, "100vw", "cab-int__img", True)}
- <div class="c cab-int__in">
-  <p class="cab-int__et">{esc(p['etiqueta'])}</p>
-  <h1 class="h1-int">{esc(p['h1'])}</h1>
-  <p class="cab-int__corta">{inline(p['entrada_corta'])}</p>
-  {acciones}
- </div>
-</section>
-"""
-    return f"""<section class="cab-int cab-int--blanca">
- <div class="reticula" aria-hidden="true"><span></span><span></span><span></span><span></span></div>
- <div class="c cab-int__in">
-  <p class="cab-int__et">{esc(p['etiqueta'])}</p>
-  <h1 class="h1-int">{esc(p['h1'])}</h1>
-  <p class="cab-int__corta">{inline(p['entrada_corta'])}</p>
-  {acciones}
- </div>
-</section>
-"""
+def privacidad(clave):
+    return f'<p class="casilla casilla--info">{texto(clave)} <a href="{URL_PRIVACIDAD}">Política de privacidad</a>.</p>'
 
 
-def intro_int(p, intro, foto_der):
-    ps = [c for t, c in intro if t == "p" and not R_FOTO.match(c)]
-    if not ps:
-        return ""
-    temas = TEMAS.get(p["url"], [])
-    pil = f'<ul class="temas">{"".join(f"<li>{esc(x)}</li>" for x in temas)}</ul>' if temas else ""
-    der = f'<div class="intro__der rv">{foto(foto_der, "(max-width: 900px) 100vw, 60vw")}</div>' if foto_der else ""
-    return f"""<section class="intro{' intro--sola' if not foto_der else ''}">
- <div class="c intro__in">
-  <div class="intro__izq rv">
-   {"".join(f'<p class="intro__p">{inline(x)}</p>' for x in ps)}
-   {pil}
+def llamada(url):
+    return f"""<div class="llamada" id="te-llamamos">
+ <p class="llamada__tit">{texto("llamada_titulo")}</p>
+ <p class="llamada__txt" data-promesa>{texto("llamada_promesa")}</p>
+ <div class="aviso aviso--ok" data-llamada-ok hidden>{texto("llamada_ok")}</div>
+ <div class="aviso aviso--error" data-llamada-error hidden>No se ha podido enviar. Llámenos al {N['telefono']}.</div>
+ <form class="llamada__form" action="/enviar.php" method="post">
+  <input type="hidden" name="tipo" value="llamada"><input type="hidden" name="pagina" value="{url}"><input type="hidden" name="t" value="">
+  <label class="trampa" aria-hidden="true">Web<input type="text" name="web" tabindex="-1" autocomplete="off"></label>
+  <label>Nombre<input type="text" name="nombre" autocomplete="name" required maxlength="80"></label>
+  <label>Teléfono<input type="tel" name="telefono" autocomplete="tel" inputmode="tel" required pattern="[0-9 +()\\-]{{9,20}}" maxlength="20"></label>
+  {privacidad("privacidad_llamada")}
+  {T.boton_form(texto("llamada_boton"))}
+ </form>
+</div>"""
+
+
+def banda(url, titulo=None, texto_b=None):
+    bp = BANDA_PAGINA.get(url)
+    titulo = titulo or esc(bp[0] if bp else texto("banda_titulo"))
+    texto_b = texto_b or esc(bp[1] if bp else texto("banda_texto"))
+    extra = f'<a class="banda__extra" href="{CTA_EXTRA[1]}">{esc(CTA_EXTRA[0])} {T.ico("flecha-diagonal")}</a>' if CTA_EXTRA and CTA_EXTRA[1] != url else ""
+    obj = objeto_html("banda__objeto", lcp=False) if OBJETO_PORTADA.get("en_banda") else ""
+    return f"""<section class="banda-sec" aria-label="Contacto">
+ <div class="contenedor">
+  <div class="banda" data-abre>
+   <span class="banda__fondo" aria-hidden="true"></span>
+   {obj}
+   <div class="banda__txt">
+    <p class="etiqueta etiqueta--claro">{T.simbolo("etiqueta__sim")}{esc(texto("banda_etiqueta"))}</p>
+    <h2 class="banda__tit">{titulo}</h2>
+    <p class="banda__p">{texto_b}</p>
+    {T.estado("estado--claro")}
+    <div class="acciones">{T.btn_foto("btn--turquesa btn--grande", extra=' data-zona="banda"')}{T.btn_llamar("btn--linea-claro btn--grande", N['telefono'], ' data-zona="banda"')}</div>
+   </div>
+   <div class="banda__form">{llamada(url)}</div>
   </div>
-  {der}
  </div>
 </section>
 """
 
 
-def seccion_int(s, oscura=False, form=""):
-    cuerpo = render(s["bl"])
-    # las reseñas y el mapa salen a todo el ancho, debajo de la sección
-    fuera = []
-    for m in re.finditer(r'<figure class="opinion rv ">.*?</figure>|<div class="mapa rv">.*?</div>', cuerpo, re.S):
-        fuera.append(m.group(0))
-    for f in fuera:
-        cuerpo = cuerpo.replace(f, "")
-    sec = f"""<section class="sec{' sec--oscura' if oscura else ''}" id="{slug(s['h2'])}">
- <div class="c sec__in">
-  <h2 class="h2 sec__h2 rv">{h2_clave(s['h2'])}</h2>
-  <div class="sec__cuerpo prosa">{cuerpo}{form}</div>
+# ---------- Páginas interiores: columna de lectura con índice clavado ----------
+def lectura(p, entrada, resto, secs_normales, ul=None):
+    """Columna de lectura (720 px) con el índice clavado a la izquierda en tarjeta blanca y la tarjeta de
+    llamada debajo (variación A de páginas interiores)."""
+    ind, blq = [], []
+    for s in secs_normales:
+        sid = slug(s["h2"])
+        ind.append(f'<li><a href="#{sid}">{esc(plano(s["h2"]))}</a></li>')
+        blq.append(f'<section class="lectura__blq" id="{sid}"><h2 class="h2-lect rv">{inline(s["h2"])}</h2><div class="prosa rv">{render_bloques(s["bl"])}</div></section>')
+    if True:  # opiniones sale siempre (con reseñas o con la nota de la ficha)
+        ind.append('<li><a href="#opiniones">Opiniones</a></li>')
+    if p["faq"]:
+        ind.append('<li><a href="#preguntas">Preguntas frecuentes</a></li>')
+    extra = f'<a class="mini__extra" href="{CTA_EXTRA[1]}">{esc(CTA_EXTRA[0])} {T.ico("flecha-diagonal")}</a>' if CTA_EXTRA and CTA_EXTRA[1] != p["url"] else ""
+    lista = "".join(ind)
+    ent = f'<p class="lectura__entrada rv">{" ".join(inline(x) for x in entrada)}</p>' if entrada else ""
+    return f"""<section class="lectura">
+ <div class="contenedor lectura__in">
+  <aside class="lectura__lado" aria-label="{A(texto('indice_titulo'))}">
+   <details class="indice" data-indice open><summary>{esc(texto("indice_titulo"))}</summary><ol>{lista}</ol></details>
+   <div class="mini">
+    <p class="mini__tit">{esc(texto("indice_llamar"))}</p>
+    {T.estado()}
+    {T.btn_foto("btn--acento btn--peq", extra=' data-zona="indice"')}
+    {T.btn_llamar("btn--linea btn--peq", N['telefono'], ' data-zona="indice"')}
+   </div>
+  </aside>
+  <div class="lectura__col">
+   {ent}
+   <div class="prosa rv">{render_bloques(resto)}</div>
+   {ventajas_html(ul) if ul else ""}
+   {"".join(blq)}
+  </div>
  </div>
 </section>
 """
-    if fuera:
-        sec += f'<section class="sec-ancha"><div class="c">{"".join(fuera)}</div></section>\n'
-    return sec
 
 
-def formulario(tipo, url):
-    """Presupuesto por foto (contacto, opción B) o candidatura (trabaja con nosotros). Lo procesa enviar.php."""
-    priv = f'<p class="form__priv">{esc(texto("form_privacidad")) if tipo == "presupuesto" else "SOLVENTO INSTALACIONES Y MANTENIMIENTO, S.L. usará sus datos solo para valorar su candidatura (art. 6.1.b del RGPD)."} Sus derechos, en la <a href="/privacidad/">política de privacidad</a>.</p>'
+# ---------- Contacto ----------
+def formulario(tipo="presupuesto", url="/contacto/"):
+    """Presupuesto por foto (contacto) o candidatura (trabaja con nosotros). Lo procesa enviar.php (adjuntos)."""
+    priv = (texto("privacidad_form") if tipo == "presupuesto" else
+            "SOLVENTO INSTALACIONES Y MANTENIMIENTO, S.L. usará sus datos solo para valorar su candidatura (art. 6.1.b del RGPD).")
+    priv = f'<p class="casilla casilla--info">{esc(priv)} Sus derechos, en la <a href="{URL_PRIVACIDAD}">política de privacidad</a>.</p>'
     comun = f"""<input type="hidden" name="tipo" value="{tipo}"><input type="hidden" name="pagina" value="{url}"><input type="hidden" name="t" value="">
   <label class="trampa" aria-hidden="true">Web<input type="text" name="web" tabindex="-1" autocomplete="off"></label>"""
+    tel = '<label>Teléfono<input type="tel" name="telefono" autocomplete="tel" inputmode="tel" required pattern="[0-9 +()\\-]{9,20}" maxlength="20"></label>'
     if tipo == "presupuesto":
         quien = "".join(f'<label class="opcion"><input type="radio" name="quien" value="{v}"{" checked" if k == 0 else ""}><span>{esc(t)}</span></label>'
                         for k, (v, t) in enumerate(QUIEN))
         campos = f"""<fieldset class="form__quien"><legend>¿Quién nos escribe?</legend>{quien}</fieldset>
-  <div class="form__fila"><label>Nombre<input type="text" name="nombre" autocomplete="name" required maxlength="80"></label>
-  <label>Teléfono<input type="tel" name="telefono" autocomplete="tel" inputmode="tel" required pattern="[0-9 +()\\-]{{9,20}}" maxlength="20"></label></div>
-  <div class="form__fila"><label><span>Correo <span class="opcional">(opcional)</span></span><input type="email" name="correo" autocomplete="email" maxlength="120"></label>
+  <div class="fila-form"><label>Nombre<input type="text" name="nombre" autocomplete="name" required maxlength="80"></label>{tel}</div>
+  <div class="fila-form"><label><span>Correo <span class="opcional">(opcional)</span></span><input type="email" name="correo" autocomplete="email" maxlength="120"></label>
   <label data-solo="administrador"><span>Administración o comunidad <span class="opcional">(opcional)</span></span><input type="text" name="comunidad" maxlength="120"></label></div>
   <label><span><span data-etq="administrador">Dirección del edificio</span><span data-etq="particular" hidden>Municipio</span></span><input type="text" name="donde" required maxlength="160" placeholder="Calle y municipio"></label>
   <label>Qué necesita<select name="necesita" required><option value="">Elija una opción</option><option>Bajante de amianto</option><option>Fuga o fontanería</option><option>Generales de agua o saneamiento</option><option>Cubierta, terraza o filtración</option><option>Trabajo en altura (canalón, bajante por fuera)</option><option>Gas o calefacción</option><option>Caldera, termo o calentador</option><option>Aire acondicionado</option><option>Otro</option></select></label>
-  <label><span>Qué pasa <span class="opcional">(opcional)</span></span><textarea name="mensaje" maxlength="2000" placeholder="Dónde está, desde cuándo y lo que vea en la foto"></textarea></label>
-  <label class="form__foto"><span>Foto <span class="opcional">(opcional, pero nos ayuda mucho; hasta 3, {FOTO_MAX_MB} MB cada una)</span></span><input type="file" name="foto[]" accept="image/*" multiple data-max="{FOTO_MAX_MB}"><span class="form__foto-txt" data-foto-txt>{T.ico("camara")}Haga o elija una foto de la bajante o de la avería</span></label>"""
-        boton = "Enviar y recibir presupuesto"
+  <label><span>Qué pasa <span class="opcional">(opcional)</span></span><textarea name="mensaje" maxlength="2000" placeholder="{A(texto('form_mensaje_ph'))}"></textarea></label>
+  <label class="form__foto"><span>Fotos <span class="opcional">(opcional, pero nos ayuda mucho; hasta 3, {FOTO_MAX_MB} MB cada una)</span></span><input type="file" name="foto[]" accept="image/*" multiple data-max="{FOTO_MAX_MB}"><span class="form__foto-txt" data-foto-txt>{T.ico("camara")}<span>Haga o elija una foto de la bajante o de la avería</span></span></label>"""
+        boton = texto("form_boton")
+        ok = texto("form_ok")
     else:
-        campos = f"""<div class="form__fila"><label>Nombre<input type="text" name="nombre" autocomplete="name" required maxlength="80"></label>
-  <label>Teléfono<input type="tel" name="telefono" autocomplete="tel" inputmode="tel" required pattern="[0-9 +()\\-]{{9,20}}" maxlength="20"></label></div>
-  <div class="form__fila"><label>Oficio<select name="oficio" required><option value="">Elija</option><option>Albañil</option><option>Fontanero</option><option>Otro</option></select></label>
+        campos = f"""<div class="fila-form"><label>Nombre<input type="text" name="nombre" autocomplete="name" required maxlength="80"></label>{tel}</div>
+  <div class="fila-form"><label>Oficio<select name="oficio" required><option value="">Elija</option><option>Albañil</option><option>Fontanero</option><option>Otro</option></select></label>
   <label>Años de experiencia<input type="text" name="anios" inputmode="numeric" maxlength="20"></label></div>
   <label>Municipio donde vive<input type="text" name="donde" autocomplete="address-level2" maxlength="80"></label>
   <label>Cuéntenos en dos líneas dónde ha trabajado<textarea name="mensaje" maxlength="1500"></textarea></label>
-  <label class="form__foto"><span>Currículum <span class="opcional">(opcional; PDF, Word o foto, hasta {FOTO_MAX_MB} MB)</span></span><input type="file" name="foto[]" accept=".pdf,.doc,.docx,image/*" data-max="{FOTO_MAX_MB}"><span class="form__foto-txt" data-foto-txt>{T.ico("documento")}Adjunte su currículum si lo tiene</span></label>"""
+  <label class="form__foto"><span>Currículum <span class="opcional">(opcional; PDF, Word o foto, hasta {FOTO_MAX_MB} MB)</span></span><input type="file" name="foto[]" accept=".pdf,.doc,.docx,image/*" data-max="{FOTO_MAX_MB}"><span class="form__foto-txt" data-foto-txt>{T.ico("documento")}<span>Adjunte su currículum si lo tiene</span></span></label>"""
         boton = "Enviar candidatura"
-    return f"""<form class="form rv" id="presupuesto" action="/enviar.php" method="post" enctype="multipart/form-data" data-form="{tipo}">
-  <div class="aviso aviso--ok" id="form-ok" hidden>{texto("form_ok") if tipo == "presupuesto" else "Recibido. Le llamamos para conocerle, de lunes a viernes."}</div>
+        ok = "Recibido. Le llamamos para conocerle, de lunes a viernes."
+    return f"""<form class="formulario rv" id="presupuesto" action="/enviar.php" method="post" enctype="multipart/form-data" data-form="{tipo}">
+  <div class="aviso aviso--ok" id="form-ok" hidden>{ok}</div>
   <div class="aviso aviso--error" id="form-error" hidden>No se ha podido enviar. Llámenos al {N['telefono']} o inténtelo de nuevo.</div>
   {comun}
   {campos}
   {priv}
-  <div class="acciones"><button class="btn" type="submit"><span>{boton}</span>{T.ico("flecha-diagonal", "btn__ico")}</button></div>
+  <div class="acciones">{T.boton_form(boton)}</div>
 </form>"""
 
 
 def contacto_cuerpo(p, intro):
-    ps = [c for t, c in intro if t == "p" and not R_FOTO.match(c)]
-    return f"""<section class="contacto">
- <div class="c contacto__in">
+    ps = [c for t, c in intro if t == "p" and not es_marcador(c)]
+    txt = "".join(f"<p>{inline(x)}</p>" for x in ps)
+    return f"""<section class="seccion contacto">
+ <div class="contenedor contacto__grid">
   <div class="contacto__datos">
-   {f'<div class="prosa rv">{"".join(f"<p>{inline(x)}</p>" for x in ps)}</div>' if ps else ""}
-   <p class="contacto__et">Llámenos</p>
-   {T.tel("contacto__tel", "contacto")}
+   <div class="prosa rv">{txt}</div>
+   <p class="etiqueta">{T.simbolo("etiqueta__sim")}Llámenos</p>
+   <a class="contacto__tel tel" href="tel:{N['telefono_e164']}" data-zona="contacto">{N['telefono']}</a>
    {T.estado()}
-   <address class="contacto__dir">
-    <p>Oficina: <a class="tel" href="tel:{N['oficina_e164']}">{N['oficina']}</a> · <a href="mailto:{N['email']}">{N['email']}</a></p>
-    <p>{N['horario_texto']}.</p>
-    <p><a href="{FICHA}" rel="noopener" target="_blank">{N['calle']}, {N['zona_calle']}, {N['cp']} {N['localidad']}</a></p>
+   <address class="prosa">
+    <p><strong>Horario:</strong> {N['horario_texto']}. {texto('contacto_horario_extra')}</p>
+    <p><strong>Oficina:</strong> <a class="tel" href="tel:{N['oficina_e164']}">{N['oficina']}</a> · <a href="mailto:{N['email']}">{N['email']}</a></p>
+    <p><strong>Nave:</strong> <a href="{FICHA}" rel="noopener" target="_blank">{N['calle']}, {N['zona_calle']}, {N['cp']} {N['localidad']}</a></p>
    </address>
   </div>
   <div class="contacto__form">{formulario("presupuesto", p["url"])}</div>
@@ -636,76 +836,89 @@ def contacto_cuerpo(p, intro):
 
 
 # ---------- Página ----------
+def es_widget(s):
+    return any(tt == "p" and ES_WIDGET(c) for tt, c in s["bl"])
+
+
 def pagina(p):
     t = datos.tipo_de(p["url"])
     intro, secs = secciones(p["bloques"])
-    cuerpo = []
-    USADAS.clear()
+    pb = pueblo_de(p["url"]) if t == "municipio" else None
+    T.CTX["pueblo"] = pb
+    cuerpo, op, cta = [], None, None
+    uls = [c for tt, c in intro if tt == "ul"]
+    ul = uls[0] if uls else None
+    normales = []
+    for k, s in enumerate(secs):
+        if ES_CTA.match(s["h2"]) or (CTA_ULTIMO and k == len(secs) - 1 and not es_widget(s)):
+            ps = [c for tt, c in s["bl"] if tt == "p"]
+            cta = (inline(s["h2"]), " ".join(inline(x) for x in ps) or None)
+        elif es_widget(s):
+            ps = [c for tt, c in s["bl"] if tt == "p" and not c.startswith("(") and not c.startswith("[[")]
+            op = op or (inline(s["h2"]), " ".join(inline(x) for x in ps))
+        elif t == "contacto" and s["h2"] in CONTACTO_YA:
+            continue
+        else:
+            normales.append(s)
     if t == "home":
         cuerpo.append(portada_home(p))
-        cuerpo.append(cinta_html())
-        dec = [c for tt, c in intro if tt == "p" and not R_FOTO.match(c)]
-        cuerpo.append(estrella(dec))
-        op = None
-        for s in secs:
-            pieza = next((v for k, v in PIEZAS_H2.items() if s["h2"].startswith(k)), None)
-            for tt, c in s["bl"]:
-                if tt == "p" and R_OPINION.match(c):
-                    op = op or R_OPINION.match(c).group(1)
-                    fr = R_FRAG.search(c)
-                    if fr:
-                        FRAG[int(R_OPINION.match(c).group(1))] = fr.group(1)
-            if pieza == "filas":
-                cuerpo.append(filas_serv(s))
-                cuerpo.append("<!--OPINION-->")
-                ult = [c for tt, c in s["bl"] if tt == "p" and not R_FOTO.match(c) and not plano(c).endswith(":")]
-                cuerpo.append(propia(ult[-1] if len(ult) > 1 else ""))
-            elif pieza == "papeles":
-                cuerpo.append(papeles(s))
-            elif isinstance(pieza, tuple) and pieza[0] == "puntos":
-                cuerpo.append(puntos(s, pieza[1], pieza[2]))
-            elif isinstance(pieza, tuple) and pieza[0] == "zona":
-                cuerpo.append(zona(s, pieza[1], pieza[2]))
-            else:
-                cuerpo.append(seccion_int(s))
-        html_c = "".join(cuerpo).replace("<!--OPINION-->", opinion_y_cifras(op) if op else "")
-        cuerpo = [html_c, faq_html(p["faq"])]
+        cuerpo.append(f'<div class="tras-hero">{T.cinta(CINTA_PORTADA, "cinta--gigante")}</div>')
+        dec, resto = reparte_intro(intro)
+        cuerpo.append(manifiesto(p, dec, ul))
+        if resto and normales:
+            normales[0]["bl"] = resto + normales[0]["bl"]
+        normales = [s for s in normales if not s["h2"].startswith(SERVICIOS_TITULO.rstrip("?"))]
+        if SERVICIOS_SECCION:
+            cuerpo.append(servicios_seccion())
+        cuerpo.append(amianto_pasos())
+        for n, s in enumerate(normales, 1):
+            cuerpo.append(bloque_home(s, n))
+            if ZONA_H2 and s["h2"].startswith(ZONA_H2):
+                cuerpo.append(zona_html())
+            if n == CIFRAS_EN.get("home"):
+                cuerpo.append(cifras())
+        cuerpo.append(mapa())
+    elif t == "contacto":
+        cuerpo.append(portada_interior(p, t))
+        cuerpo.append(contacto_cuerpo(p, intro))
+        cuerpo.append(mapa())
+        if normales:
+            cuerpo.append(lectura(p, [], [], normales))
     else:
-        todas = fotos_de(intro) + [f for s in secs for f in fotos_de(s["bl"])]
-        foto_cab = next((f for f in todas if ancha(f)), None) if t != "contacto" else None
-        if foto_cab:
-            USADAS.add(foto_cab)
-        cuerpo.append(cab_int(p, t, foto_cab))
-        cuerpo.append(migas_html(p["url"]))
-        if t == "contacto":
-            cuerpo.append(intro_int(p, intro, None))
-            antes = [s for s in secs if s["h2"].startswith("¿Cómo pido")]
-            for s in antes:
-                cuerpo.append(seccion_int(s))
-            cuerpo.append(contacto_cuerpo(p, []))
-            for s in secs:
-                if s in antes or s["h2"].startswith("¿Quién nos escribe"):
-                    continue
-                cuerpo.append(seccion_int(s))
-        else:
-            # la segunda foto de la entrada (si hay) va a la derecha de la entrada; la primera ya está en la cabecera
-            resto_intro = [f for f in fotos_de(intro) if f not in USADAS]
-            if resto_intro:
-                USADAS.add(resto_intro[0])
-            cuerpo.append(intro_int(p, intro, resto_intro[0] if resto_intro else None))
-            for k, s in enumerate(secs):
-                form = formulario("empleo", p["url"]) if (p["url"] == "/trabaja-con-nosotros/" and any(tt == "p" and c.startswith("**Formulario:**") for tt, c in s["bl"])) else ""
-                cuerpo.append(seccion_int(s, oscura=(k == 1 and len(secs) > 2 and not form), form=form))
-        cuerpo.append(faq_html(p["faq"], enlace=p["url"] != URLS["faq"]))
+        cuerpo.append(portada_interior(p, t))
+        fi = fotos_de(intro)
+        hero = fi[0] if fi else None
+        if not hero:   # la primera foto de la página sube a la cabecera y sale de su sección
+            for s_ in normales:
+                fs = fotos_de(s_["bl"])
+                if fs:
+                    hero = fs[0]
+                    s_["bl"] = [b for b in s_["bl"] if not (b[0] == "p" and R_FOTO.match(b[1]) and R_FOTO.match(b[1]).group(2) == hero)]
+                    break
+        cuerpo.append(foto_cab(hero))
+        dec, resto = reparte_intro(intro)
+        resto = [("p", c) for tt, c in intro if tt == "p" and R_FOTO.match(c) and R_FOTO.match(c).group(2) != hero] + resto
+        cuerpo.append(lectura(p, dec, resto, normales, ul))
+        if p["url"] in (URLS["amianto"], URLS["admin"]) or t == "municipio":
+            cuerpo.append(amianto_pasos(set(fotos_de(p["bloques"]) + fotos_de([("p", c) for s_ in secs for tt, c in s_["bl"] if tt == "p"]))))
+        if p["url"] == "/trabaja-con-nosotros/":
+            cuerpo.append(f'<section class="seccion"><div class="contenedor form-empleo">{formulario("empleo", p["url"])}</div></section>')
+        if CIFRAS_EN.get(t) or p["url"] == URLS["admin"]:
+            cuerpo.append(cifras())
+    cuerpo.append(opiniones(pb, *(op or (None, ""))))
+    cuerpo.append(faq_html(p["faq"]))
+    if t != "contacto":
+        cuerpo.append(banda(p["url"], *(cta or (None, None))))
     robots = "noindex, follow" if (t == "contacto" and not CONTACTO_INDEXABLE) else "index, follow"
     pre = None
-    if t == "home" and PORTADA_FOTO:
-        b = PORTADA_FOTO.rsplit(".", 1)[0]
-        pre = (f"/img/{b}-800.webp 800w, /img/{b}-1600.webp 1600w", "(max-width: 1240px) 100vw, 1200px")
-    return montar(T.cabeza(p, schema_de(p), robots, pre) + T.cabecera(p["url"]) + "".join(cuerpo) + T.pie(p["url"]))
+    if t == "home":
+        b = OBJETO_PORTADA["imagen"].rsplit(".", 1)[0]
+        pre = (f"/img/{b}-420.webp 420w, /img/{b}-840.webp 840w", OBJ_SIZES)
+    return montar(T.cabeza(p, schema_de(p), robots, precarga=pre) + T.cabecera(p["url"]) + "".join(cuerpo) + T.pie(p["url"]))
 
 
 def montar(h):
+    """El sprite de la página (solo los iconos que usa) se inserta al abrir <body>."""
     return h.replace("<!--SPRITE-->", T.sprite(h), 1)
 
 
@@ -721,28 +934,30 @@ def legales():
 
 
 def pagina_legal(url, titulo, md):
-    p = {"url": url, "title": f"{titulo} | {N['nombre']}", "meta": f"{titulo} de solvento.es.", "h1": titulo,
-         "etiqueta": "Información legal", "entrada_corta": N["razon_social"] + " · CIF " + N["cif"]}
+    T.CTX["pueblo"] = None
+    p = {"url": url, "title": f"{titulo} | {N['nombre']}", "meta": f"{titulo} de {DOMINIO.split('//')[1]}.", "h1": titulo}
     NOMBRE_CORTO[url] = titulo
     bl = []
     for par in re.split(r"\n\s*\n", md):
         par = par.strip()
         if not par:
             continue
-        bl.append(("h2l", par) if (len(par) < 90 and not par.endswith(".") and "\n" not in par and not par.startswith("Política de privacidad de Google")) else ("p", par))
-    htmlc = "".join(f'<h2 class="h2-legal">{esc(c)}</h2>' if t == "h2l" else
+        bl.append(("h2l", par) if (len(par) < 90 and not par.endswith(".") and "\n" not in par) else ("p", par))
+    htmlc = "".join(f'<h2 class="h2-lect">{esc(c)}</h2>' if t == "h2l" else
                     "".join(f"<p>{inline(x)}</p>" for x in c.split("\n") if x.strip()) for t, c in bl)
     schema = {"@context": "https://schema.org", "@graph": [negocio_schema(), {"@type": "WebPage", "url": DOMINIO + url, "name": titulo,
                                                                           "dateModified": fecha_mod(os.path.join(RAIZ, "contenido", "legales", "legales.md"))}]}
-    return montar(T.cabeza(p, schema, "noindex, follow") + T.cabecera(url) + cab_int(p, "legal", None) + migas_html(url)
-                  + f'<section class="sec sec--legal"><div class="c"><div class="prosa legal">{htmlc}</div></div></section>' + T.pie())
+    return montar(T.cabeza(p, schema, "noindex, follow") + T.cabecera(url) + f"""<section class="cab-int cab-int--legal"><div class="contenedor">{migas_html(url)}<h1 class="h1-int">{esc(titulo)}</h1></div></section>
+<section class="seccion"><div class="contenedor"><div class="prosa legal">{htmlc}</div></div></section>""" + T.pie("/"))
 
 
 def pagina_404():
-    p = {"url": "/404/", "title": f"Página no encontrada | {N['nombre']}", "meta": "Esta página no existe.", "h1": "Esta página no existe",
-         "etiqueta": "Error 404", "entrada_corta": texto("error_texto")}
+    T.CTX["pueblo"] = None
+    p = {"url": "/404/", "title": f"Página no encontrada | {N['nombre']}", "meta": "Esta página no existe.", "h1": "Esta página no existe"}
     schema = {"@context": "https://schema.org", "@graph": [negocio_schema()]}
-    return montar(T.cabeza(p, schema, "noindex, follow") + T.cabecera("") + cab_int(p, "404", None) + T.pie())
+    return montar(T.cabeza(p, schema, "noindex, follow") + T.cabecera("") + f"""<section class="cab-int"><div class="contenedor"><p class="etiqueta">{T.simbolo("etiqueta__sim")}Error 404</p><h1 class="h1-int">Esta página no existe</h1>
+<p class="cab-int__corta">{texto("error_texto")}</p>
+<div class="acciones">{T.btn_llamar()}{T.boton("Ir al inicio", "/", "btn--linea")}</div></div></section>""" + T.pie("/"))
 
 
 def fecha_mod(ruta):
@@ -788,18 +1003,29 @@ def main():
         f'<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">{sm}</urlset>\n')
     open(os.path.join(SITIO, "robots.txt"), "w", encoding="utf-8").write(
         f"User-agent: *\nAllow: /\nDisallow: /enviar.php\n\nSitemap: {DOMINIO}/sitemap.xml\n")
+    datos_neg = [f"- Nombre: {N['nombre']} ({N['razon_social']}).",
+                 f"- Dirección: {N['calle']}, {N['cp']} {N['localidad']} ({N['provincia']}).",
+                 f"- Teléfono: {N['telefono']} · Correo: {N['email']} · Ficha de Google: {FICHA}",
+                 f"- Horario: {N['horario_texto']}. {texto('llms_horario_extra')}".rstrip(),
+                 *TEXTOS["llms_datos"]]
+    if N.get("pago"):
+        datos_neg.append(f"- Pago: {N['pago']}.")
     llms = [texto("llms_titulo"), "",
-            f"> {texto('llms_resumen')} {N['horario_texto']}. Teléfono {N['telefono']}.", "",
-            "## Datos del negocio",
-            f"- Nombre: {N['nombre']} ({N['razon_social']}, CIF {N['cif']}).",
-            f"- Dirección: {N['calle']}, {N['zona_calle']}, {N['cp']} {N['localidad']} ({N['provincia']}).",
-            f"- Teléfono: {N['telefono']} · Oficina: {N['oficina']} · Correo: {N['email']} · Ficha de Google: {FICHA}",
-            f"- Horario: {N['horario_texto']}.",
-            *TEXTOS["llms_datos"], "", f"## Lo que {N['nombre']} no hace", *TEXTOS["llms_no_hace"], "", "## Páginas principales"]
+            f"> {texto('llms_resumen')} {N['horario_texto']}. Teléfono {N['telefono']}. {N['valoracion']} en Google con {N['resenas']} reseñas.", "",
+            "## Datos del negocio", *datos_neg]
+    no_hace = [x for x in TEXTOS.get("llms_no_hace", []) if x]
+    if not N.get("cambia_equipos") and TEXTOS.get("llms_no_instala"):
+        no_hace.append(TEXTOS["llms_no_instala"])
+    if no_hace:
+        llms += ["", f"## Lo que {N['nombre']} no hace", *no_hace]
+    llms += ["", "## Páginas principales"]
     llms += [f"- [{nombre(u)}]({DOMINIO}{u}): {POR_URL[u]['meta']}" for u in LLMS_PRINCIPALES if u in POR_URL]
-    llms += ["", "## Municipios"] + [f"- [{v}]({DOMINIO}{k})" for k, v in PUEBLO.items() if k in POR_URL]
+    marcas = [u for u in LLMS_MARCAS if u in POR_URL]
+    if marcas:
+        llms += ["", "## Marcas"] + [f"- [{nombre(u)}]({DOMINIO}{u}): {POR_URL[u]['meta']}" for u in marcas]
+    if PUEBLO:
+        llms += ["", "## Municipios"] + [f"- [{v}]({DOMINIO}{k})" for k, v in PUEBLO.items() if k in POR_URL]
     open(os.path.join(SITIO, "llms.txt"), "w", encoding="utf-8").write("\n".join(llms) + "\n")
-    json.dump(sorted(PENDIENTES), open(os.path.join(SITIO, "..", "generador", "_fotos_pendientes.json"), "w"), ensure_ascii=False)
     print(f"build: {len(PAGINAS)} páginas + {len(legales())} legales + 404 · sitemap con {len(urls)} URLs")
 
 

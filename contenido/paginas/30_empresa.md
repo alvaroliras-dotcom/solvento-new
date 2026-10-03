@@ -23,6 +23,19 @@ La nave está en el polígono San José de Valderas, en Leganés. Por eso somos 
 
 Al frente está Israel.
 
+## ¿Por qué nos hemos especializado en el amianto?
+
+Porque en el sur de Madrid hay miles de edificios de antes de 2002 con la bajante de fibrocemento dentro de las cocinas. Y porque cambiarla bien exige algo que no tiene cualquiera.
+
+Hemos hecho lo que pide la norma, y algo más:
+
+- **Inscripción en el RERA** con el n.º 2800625.
+- **Plan de trabajo general aprobado** por el IRSST, para no tener que esperar un plan nuevo en cada obra.
+- **Toda la plantilla formada en amianto**, también los pintores.
+- **Cabina de descontaminación propia**, en la que hemos invertido 10.000 euros. Es por donde pasa el operario al salir de la zona de trabajo, para que ninguna fibra salga de la obra.
+
+Más del 90 % de nuestras obras de amianto son para comunidades de vecinos.
+
 (Bloque de opiniones de Google, con la cita elegida: n.º 36 de resenas.json)
 
 ## ¿Qué habilitaciones y registros tiene Solvento?
@@ -42,9 +55,7 @@ El plan de trabajo general para el amianto lo aprobó el IRSST, la autoridad lab
 
 ## ¿Para quién trabaja Solvento?
 
-Sobre todo para comunidades de vecinos y para los administradores de fincas que las llevan. Hay administradores que nos pasan trabajo desde hace muchos años. Lo que les ofrecemos lo tiene en [LINK servicios para administradores de fincas](/administradores-de-fincas/) 🆕.
-
-También atendemos a particulares en unos pocos trabajos de su vivienda.
+Para comunidades de vecinos y para los administradores de fincas que las llevan. Hoy trabajamos con unos 20 administradores, en entre 50 y 100 comunidades, sin exclusividad con ninguno. Lo que les ofrecemos lo tiene en [LINK servicios para administradores de fincas](/administradores-de-fincas/) 🆕.
 
 Si quiere formar parte del equipo, [LINK buscamos albañiles y fontaneros](/trabaja-con-nosotros/) 🔗. Y si tiene una obra, [LINK envíenos una foto y le decimos qué hay que hacer](/contacto/) 🔗.
 
@@ -59,10 +70,15 @@ FAQ
 
 **¿Tienen seguro?** Sí. Seguro de responsabilidad civil de 1,3 millones de euros con MAPFRE.
 
-**¿Pueden trabajar con amianto?** Sí. Solvento está inscrita en el RERA con el n.º 2800625 y tiene un plan de trabajo general aprobado.
+**¿Pueden trabajar con amianto?** Sí. Solvento está inscrita en el RERA con el n.º 2800625, tiene un plan de trabajo general aprobado y cabina de descontaminación propia.
+
+**¿Con cuántos administradores trabajan?** Con unos 20, en entre 50 y 100 comunidades.
 
 ---
 Notas para Álvaro:
+
+Reescritura del 03/10/2026: sección del amianto con la cabina (dato de Álvaro; «por donde pasa el operario al salir» es lo que hace una cabina de descontaminación: **comprobar con Isra**), cifras de administradores, fuera la línea de particulares.
+
 
 Cierre del paso 15 (02/10/2026):
 - Razón social: SOLVENTO INSTALACIONES Y MANTENIMIENTO, S.L., CIF B88551635, domicilio social C/ Electricidad 10, 28918 Leganés (plantilla de factura y Axesor/BORME, confirmado por Álvaro). Va en una FAQ, en `legalName` y en los legales. No se pone año de inicio: la sociedad es de diciembre de 2019, pero la actividad es anterior, y escribir 2019 haría pensar que la empresa empezó entonces.

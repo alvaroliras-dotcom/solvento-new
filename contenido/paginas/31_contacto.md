@@ -1,25 +1,25 @@
 URL: /contacto/
-Title: Contacto y presupuesto de bajante por foto | Solvento
-Meta description: Envíenos una foto de la bajante, la fuga o la avería y le decimos qué hay que hacer, a menudo el mismo día. Nave en Leganés. Teléfono 910 06 70 60.
-Keyword principal: presupuesto de bajante por foto
-H1: Envíenos una foto y le decimos qué hay que hacer
-Etiqueta: Contacto · Presupuesto por foto
-Entrada corta: Una foto de la bajante o de la avería basta para darle un presupuesto, a menudo el mismo día. O llámenos al 910 06 70 60.
+Title: Contacto y presupuesto para comunidades | Solvento
+Meta description: Cuéntenos qué pasa en su edificio y, si puede, adjunte una foto. A menudo le contestamos el mismo día. Nave en Leganés. Teléfono 910 06 70 60.
+Keyword principal: presupuesto de bajante de amianto
+H1: Cuéntenos qué pasa en su edificio
+Etiqueta: Contacto · Presupuesto
+Entrada corta: Escríbanos en el formulario o llámenos al 910 06 70 60. Si puede, adjunte una foto: nos ayuda a hacernos una idea.
 ---
 
-Solvento presupuesta por foto los trabajos de comunidades de vecinos, administradores de fincas y particulares del sur de Madrid. Envíe una foto de la bajante, la fuga o la avería y le decimos qué hay que hacer y cuánto cuesta, a menudo el mismo día. Nave en Leganés, teléfono 910 06 70 60, de lunes a viernes.
+Solvento atiende a comunidades de vecinos, administradores de fincas y particulares del sur de Madrid. Cuéntenos qué pasa en el formulario o por teléfono y, si puede, adjunte una foto de la bajante, la fuga o la avería: nos ayuda a hacernos una idea antes de verlo. A menudo le contestamos el mismo día. Nave en Leganés, teléfono 910 06 70 60, de lunes a viernes.
 
 (FOTO: bajante de fibrocemento en el patio de luces de un edificio, vista desde abajo — presupuesto-bajante-amianto-foto-leganes.jpg)
 
-## ¿Cómo pido un presupuesto por foto?
+## ¿Cómo pido un presupuesto?
 
 Tres pasos:
 
-1. Haga una foto del problema. Si es una bajante, mejor una de cerca y otra de lejos, para que se vea por dónde va.
-2. Súbala en el formulario de abajo y díganos dónde está el edificio o la vivienda.
-3. Le llamamos o le escribimos con lo que hay que hacer y el presupuesto. A menudo, el mismo día.
+1. Cuéntenos en el formulario qué pasa y dónde está el edificio o la vivienda.
+2. Si puede, adjunte una foto. Si es una bajante, mejor una de cerca y otra de lejos, para que se vea por dónde va.
+3. Le llamamos para verlo con usted. A menudo, el mismo día.
 
-Si es una bajante de amianto de una comunidad, le preparamos el presupuesto para llevarlo a la junta.
+Si es una bajante de amianto de una comunidad, el presupuesto se lo preparamos para llevarlo a la junta.
 
 ## ¿Quién nos escribe?
 
@@ -31,7 +31,7 @@ Nombre · Administración o comunidad · Teléfono · Correo · Dirección del e
 **Soy particular**
 Nombre · Teléfono · Correo · Municipio · Qué necesita (fuga, caldera, gas, termo o calentador, aire acondicionado, bajante de amianto) · Foto (opcional)
 
-[Botón] Enviar y recibir presupuesto
+[Botón] Enviar
 
 Línea informativa bajo el botón: «SOLVENTO INSTALACIONES Y MANTENIMIENTO, S.L. usará sus datos solo para responder a su solicitud y preparar el presupuesto que nos pide (art. 6.1.b del RGPD). Puede ver sus derechos en la [LINK política de privacidad](/privacidad/) 🆕».
 
@@ -55,9 +55,9 @@ FAQ
 
 **¿Cuánto tardan en contestar?** Si nos escribe en horario de trabajo, a menudo el mismo día. Si es fin de semana, el lunes.
 
-**¿Es gratis el presupuesto?** El presupuesto por foto no le compromete a nada: usted decide después si sigue adelante.
+**¿El presupuesto me compromete?** No. Usted decide después si sigue adelante.
 
-**¿Tengo que estar en casa para el presupuesto?** Para empezar, no. Con la foto suele bastar.
+**¿Para qué sirve la foto?** Para que nos hagamos una idea de lo que pasa antes de verlo. No es obligatoria.
 
 ---
 Notas para Álvaro:
@@ -73,3 +73,5 @@ Cierre del paso 15 (02/10/2026):
 - «¿Es gratis?»: la respuesta no dice «gratis». Quitado «si hace falta ver el sitio, le avisamos» (la visita no consta).
 - Dirección: la de la ficha (ver la lista de preguntas, n.º 2). Nada de «visítenos».
 - Campos del formulario, subida de foto, eventos y /gracias/: los decide Dani (paso 21). Sin tarjeta de conversión ni bloque de opiniones (contrato de enlaces).
+
+Cambio del 03/10/2026 (Álvaro): la foto no sirve para presupuestar, solo para hacerse una idea. Fuera «presupuesto por foto» de toda la web; H1, title y keyword nuevos.

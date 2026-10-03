@@ -40,6 +40,10 @@ Si la comunidad lo prefiere, también podemos encargarnos del mantenimiento de l
 
 Si la cubierta o el canalón son de difícil acceso, a menudo no hace falta montar andamio: lo resolvemos con [LINK trabajos verticales](/trabajos-verticales/) 🆕.
 
+## ¿Y si la cubierta es de fibrocemento?
+
+La hemos hecho alguna vez, pero no es lo nuestro y preferimos decírselo. Donde somos especialistas en amianto es en las [LINK bajantes de fibrocemento](/retirada-amianto/) 🔗. Si su cubierta es de uralita, cuéntenoslo con una foto y le diremos si es un trabajo para nosotros.
+
 ## ¿Por qué no esperar al próximo invierno?
 
 Porque una filtración no se queda quieta. Cada lluvia moja un poco más el forjado, el yeso del vecino y el techo del garaje.
@@ -48,7 +52,7 @@ Y porque cuanto antes se corta, menos hay que reponer después. Es la diferencia
 
 Si administra varias fincas, el resto de trabajos que hacemos en el edificio está en [LINK la página para administradores de fincas](/administradores-de-fincas/) 🆕.
 
-Trabajamos en toda la Comunidad de Madrid, con más agilidad en Alcorcón, Leganés y el resto del sur. [LINK Mándenos fotos de la mancha y de la cubierta](/contacto/) 🔗 y le preparamos el presupuesto.
+Trabajamos en toda la Comunidad de Madrid, con más agilidad en Alcorcón, Leganés y el resto del sur. [LINK Cuéntenos qué pasa](/contacto/) 🔗 y, si puede, adjunte fotos de la mancha y de la cubierta.
 
 ---
 FAQ

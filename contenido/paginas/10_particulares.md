@@ -53,7 +53,7 @@ FAQ
 
 **¿Me dan el presupuesto antes de empezar?** Siempre. Cerrado, por escrito y firmado por usted antes de empezar el trabajo.
 
-**¿Puedo pedir el presupuesto con una foto?** Sí. Envíenos una foto desde la página de contacto y le decimos qué hay que hacer.
+**¿Sirve mandar una foto?** Sí, nos ayuda a hacernos una idea. Cuéntenos qué pasa en la página de contacto y adjunte la foto si puede.
 
 **¿Hacen reformas de baño o de cocina?** No hacemos reformas de vivienda. Sí reponemos la pared, el suelo o el alicatado que haya que abrir para reparar una fuga o cambiar una bajante.
 

@@ -39,6 +39,10 @@ Trabajamos el saneamiento del edificio:
 
 Una cosa: no somos el desatasco de las tres de la madrugada. No hacemos urgencias. Si el atasco aparece el fin de semana, lo atendemos el lunes y sin recargo.
 
+## ¿Y si la fuga no se ve?
+
+Hacemos detección de fugas, pero se lo decimos claro: no somos especialistas en localizarlas ni tenemos máquina para ello. Si la fuga está a la vista o se sabe por dónde va la tubería, la encontramos y la reparamos. Si hace falta un equipo de localización, se lo diremos antes de empezar.
+
 ## ¿Quién arregla la pared después?
 
 Nosotros. Para abrir una general o cambiar un montante hay que romper. Y lo que se rompe se repone.
@@ -47,7 +51,7 @@ Albañiles propios para cerrar y alicatar. Pintores propios para dejarlo como es
 
 Si lleva varias fincas, en [LINK nuestra página para administradores de fincas](/administradores-de-fincas/) 🆕 tiene el resto de trabajos que hacemos en el edificio.
 
-Para el presupuesto, [LINK mándenos una foto de la avería o del cuarto de contadores](/contacto/) 🔗.
+[LINK Cuéntenos qué pasa](/contacto/) 🔗 y, si puede, adjunte una foto de la avería o del cuarto de contadores.
 
 ---
 FAQ

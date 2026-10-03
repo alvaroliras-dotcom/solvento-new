@@ -41,7 +41,7 @@ Hacemos instalaciones y trabajos de gas y calefacción en el edificio. No hacemo
 
 Si necesita al mismo proveedor para las bajantes, el agua o la cubierta, lo tiene en [LINK la página para administradores de fincas](/administradores-de-fincas/) 🆕.
 
-Para el presupuesto, [LINK mándenos una foto de la instalación o de la sala de calderas](/contacto/) 🔗.
+[LINK Cuéntenos qué hay que hacer](/contacto/) 🔗 y, si puede, adjunte una foto de la instalación o de la sala de calderas.
 
 ---
 FAQ

@@ -1,11 +1,12 @@
 # -*- coding: utf-8 -*-
-"""GYF-Archidex · Rematar (paso 52): siempre el ÚLTIMO del build.
+"""GYF-Rayo · Rematar (paso 52): siempre el ÚLTIMO del build.
 Copia recursos, genera imágenes 800/1600 en JPG y WebP, une y minifica el CSS,
 y deja los archivos de servidor (.htaccess, enviar.php, favicons, manifest)."""
 import os, re, shutil, sys
 from PIL import Image
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from config import (VERSION, NEGOCIO as N, DOMINIO, MARCA, COOKIES_CLAVE, HOST_PRODUCCION, COLOR_TEMA, URLS, FOTO_MAX_MB, texto)
+from config import (VERSION, NEGOCIO as N, DOMINIO, MARCA, COOKIES_CLAVE, HOST_PRODUCCION, COLOR_TEMA, REDIRECCIONES,
+                    REDIRECCIONES_302, URLS, OBJETO_PORTADA, texto, FOTO_MAX_MB)
 import json
 
 RAIZ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -33,7 +34,8 @@ def css():
 
 
 def imagenes():
-    """Fotos (JPG/PNG/WebP) → 800 y 1600 en JPG y WebP."""
+    """Fotos y casos (JPG/PNG/WebP) → 800 y 1600 en JPG y WebP. El objeto de portada (con alfa) → 420 y 840
+    en WebP con alfa y 840 en PNG (respaldo)."""
     os.makedirs(S("img"), exist_ok=True)
     n = 0
     for carpeta in ("fotos", "casos"):
@@ -50,6 +52,20 @@ def imagenes():
                 v.save(S("img", f"{b}-{w}.jpg"), "JPEG", quality=80 if w == 1600 else 78, optimize=True, progressive=True)
                 v.save(S("img", f"{b}-{w}.webp"), "WEBP", quality=76, method=6)
             n += 1
+    o = R("recursos", "objeto", OBJETO_PORTADA["imagen"])
+    if os.path.exists(o):
+        im = Image.open(o).convert("RGBA")
+        b = OBJETO_PORTADA["imagen"].rsplit(".", 1)[0]
+        for w in (420, 840):
+            v = im.resize((w, round(im.height * w / im.width)), Image.LANCZOS)
+            v.save(S("img", f"{b}-{w}.webp"), "WEBP", quality=82, method=6)
+        im.resize((840, round(im.height * 840 / im.width)), Image.LANCZOS).save(S("img", f"{b}-840.png"), "PNG", optimize=True)
+    else:
+        sys.exit(f"rematar: falta el objeto de portada recursos/objeto/{OBJETO_PORTADA['imagen']} (herramientas/objeto3d/foto_fija.py lo genera)")
+    for k in ("video_webm", "video_mov"):
+        if OBJETO_PORTADA.get(k):
+            os.makedirs(S("objeto"), exist_ok=True)
+            shutil.copy(R("recursos", "objeto", OBJETO_PORTADA[k]), S("objeto", OBJETO_PORTADA[k]))
     return n
 
 
@@ -74,56 +90,44 @@ def copiar():
         "theme_color": COLOR_TEMA, "background_color": COLOR_TEMA, "display": "standalone"}, ensure_ascii=False))
     os.makedirs(S("js"), exist_ok=True)
     js()
+    shutil.copytree(R("cliente", "js", "vendor"), S("js", "vendor"), dirs_exist_ok=True)
     shutil.copy(R("contenido", "resenas.json"), S("resenas.json"))
 
 
-HTACCESS = r"""# __NOMBRE__ · servidor Apache (hosting del cliente; nginx delante, acepta .htaccess)
+HTACCESS = r"""# __NOMBRE__ · servidor Apache (hosting Plesk del cliente)
 Options -Indexes
 DirectoryIndex index.html
 AddType font/woff2 .woff2
 AddType application/manifest+json .webmanifest
 AddCharset utf-8 .txt
 
+# Nada de copias, volcados ni registros a la vista
 <FilesMatch "\.(zip|sql|bak|old|log|sh|ini|env|git.*|md|py|csv)$">
   Require all denied
 </FilesMatch>
 ErrorDocument 404 /404.html
-ErrorDocument 410 /404.html
 
 <IfModule mod_rewrite.c>
 RewriteEngine On
-# Sin www y a https, en un solo salto (Bruno: http://, www. y https://www. → https://solvento.es/ con la misma ruta).
-# Las condiciones de X-Forwarded-* evitan el bucle detrás del proxy (lo que tiró la web de Marcos).
-RewriteCond %{HTTP_HOST} ^www\. [NC,OR]
+# Sin www (paso 18)
+RewriteCond %{HTTP_HOST} ^www\. [NC]
+RewriteRule ^ __DOMINIO__%{REQUEST_URI} [L,R=301]
+# A https. Solo si ni Apache ni el proxy de Plesk (nginx delante) dicen que ya es https:
+# así no entra en bucle detrás de un proxy (lo que tiró la web de Marcos).
 RewriteCond %{HTTPS} off
 RewriteCond %{HTTP:X-Forwarded-Proto} !https [NC]
 RewriteCond %{HTTP:X-Forwarded-SSL} !on [NC]
-RewriteRule ^ __DOMINIO__%{REQUEST_URI} [L,R=301,NE]
-RewriteCond %{HTTP_HOST} ^www\. [NC]
-RewriteRule ^ __DOMINIO__%{REQUEST_URI} [L,R=301,NE]
-
-# 1 · Concretas del mapa de Nuria (02-KEYWORDS-Y-ARQUITECTURA, hoja Mapa 301): primero las 301, después los 410
-__R301__
-__R410__
-
-# 2 · Reglas por patrón, por este orden (hoja Mapa 301, P1-P13)
-RewriteRule ^home/?$ / [L,R=301]
-RewriteRule ^(sitemap_index\.xml|wp-sitemap\.xml|[a-z0-9_-]+-sitemap[0-9]*\.xml)$ /sitemap.xml [L,R=301]
-RewriteRule ^retirada-amianto/.+$ /retirada-amianto/ [L,R=301]
-RewriteRule ^instalar(/.*)?$ /aire-acondicionado/ [L,R=301]
-RewriteRule ^instaladores-aire-acondicionado/[^/]+/[^/]+ - [G,L]
-RewriteRule ^instaladores-aire-acondicionado(/.*)?$ /aire-acondicionado/ [L,R=301]
-RewriteRule ^servicios/[^/]+/.+$ - [G,L]
-RewriteRule ^(tag|category|author|portfolio-types)(/.*)?$ - [G,L]
-RewriteRule (^|/)feed/?$ - [G,L]
-RewriteRule ^comments/feed/?$ - [G,L]
+RewriteRule ^ __DOMINIO__%{REQUEST_URI} [L,R=301]
+# Restos del WordPress antiguo: 410 (ya no existen y no vuelven)
 RewriteRule ^(wp-admin|wp-content|wp-includes|wp-json)(/.*)?$ - [G,L]
-RewriteRule ^(wp-login\.php|xmlrpc\.php|wp-cron\.php)$ - [G,L]
-RewriteCond %{QUERY_STRING} (^|&)(p|page_id|attachment_id|s|cat|tag|author)= [NC]
-RewriteRule ^$ - [G,L]
-RewriteRule ^.+/page/[0-9]+/?$ - [G,L]
-RewriteRule ^(home|empresa|contacto)/.+$ - [G,L]
-
+RewriteRule ^(wp-login\.php|xmlrpc\.php|wp-cron\.php|feed/?|comments/feed/?)$ - [G,L]
+RewriteRule ^(author|category|tag|page)(/.*)?$ - [G,L]
+# Sitemaps viejos de WordPress / Yoast / Rank Math → el nuevo
+RewriteRule ^(sitemap_index\.xml|wp-sitemap\.xml|[a-z0-9_-]+-sitemap[0-9]*\.xml)$ /sitemap.xml [L,R=301]
+# Redirecciones del cambio (paso 17)
+__REDIRECCIONES__
+# Temporales (302): URLs reservadas que volverán a servir 200
+__REDIRECCIONES_302__
 # Barra final en las URLs de carpeta
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_URI} !(\.[a-z0-9]{2,5})$ [NC]
@@ -168,7 +172,7 @@ ENVIAR = r"""<?php
 header('X-Robots-Tag: noindex');
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') { header('Location: __CONTACTO__'); exit; }
 $c = function ($k, $max) { return trim(mb_substr(strip_tags($_POST[$k] ?? ''), 0, $max)); };
-$tipo = ($_POST['tipo'] ?? '') === 'empleo' ? 'empleo' : 'presupuesto';
+$tipo = in_array($_POST['tipo'] ?? '', ['empleo', 'llamada'], true) ? $_POST['tipo'] : 'presupuesto';
 $pagina = $c('pagina', 120);
 if (!preg_match('#^/[a-z0-9\-/]*$#', $pagina) || strpos($pagina, '//') !== false) { $pagina = '__CONTACTO__'; }
 $nombre = $c('nombre', 80); $telefono = $c('telefono', 20); $correo = $c('correo', 120); $donde = $c('donde', 160);
@@ -196,10 +200,15 @@ if ($motivo === '' && !empty($_FILES['foto']) && is_array($_FILES['foto']['name'
     $adj[] = ['nombre' => 'adjunto-' . ($i + 1) . '.' . $tipos_ok[$mime], 'mime' => $mime, 'datos' => file_get_contents($tmp)];
   }
 }
-$vuelta = $tipo === 'empleo' ? '/trabaja-con-nosotros/' : '__CONTACTO__';
-if ($motivo !== '') { header('Location: ' . $vuelta . '?enviado=0&motivo=' . $motivo . '#form-error'); exit; }
+$vuelta = $tipo === 'empleo' ? '/trabaja-con-nosotros/' : ($tipo === 'llamada' ? $pagina : '__CONTACTO__');
+$clave = $tipo === 'llamada' ? 'llamada' : 'enviado';
+$ancla_ok = $tipo === 'llamada' ? '#te-llamamos' : '#form-ok'; $ancla_ko = $tipo === 'llamada' ? '#te-llamamos' : '#form-error';
+if ($motivo !== '') { header('Location: ' . $vuelta . '?' . $clave . '=0&motivo=' . $motivo . $ancla_ko); exit; }
 $para = '__EMAIL__';
-if ($tipo === 'empleo') {
+if ($tipo === 'llamada') {
+  $asunto = 'QUE ME LLAMEN · ' . $nombre . ' · ' . $telefono;
+  $cuerpo = "Petición de llamada desde la web.\n\nNombre: $nombre\nTeléfono: $telefono\nPágina: __DOMINIO__$pagina\n";
+} elseif ($tipo === 'empleo') {
   $asunto = 'CANDIDATURA · ' . $nombre . ' · ' . $oficio;
   $cuerpo = "Candidatura desde la web.\n\nNombre: $nombre\nTeléfono: $telefono\nOficio: $oficio\nAños de experiencia: $anios\nMunicipio: $donde\n\n$mensaje\n";
 } else {
@@ -216,41 +225,51 @@ foreach ($adj as $a) {
 }
 $m .= "--$sep--";
 $enviado = @mail($para, $asunto, $m, $cab);
-header('Location: ' . $vuelta . '?enviado=' . ($enviado ? '1#form-ok' : '0&motivo=envio#form-error'));
+header('Location: ' . $vuelta . '?' . $clave . '=' . ($enviado ? '1' . $ancla_ok : '0&motivo=envio' . $ancla_ko));
 """
 
 
 def servidor():
-    import json as _j, re as _re
     host = DOMINIO.split("//")[1]
-    mapa = _j.load(open(R("generador", "mapa301.json"), encoding="utf-8"))
-    r301 = "\n".join(f"RewriteRule ^{_re.escape(a.strip('/'))}/?$ {b} [L,R=301]" for a, b in mapa["r301"] if a != "/")
-    r410 = "\n".join(f"RewriteRule ^{_re.escape(a.strip('/'))}/?$ - [G,L]" for a in mapa["r410"])
+    mapa = json.load(open(R("generador", "mapa301.json"), encoding="utf-8"))
+    red = "\n".join([f"RewriteRule ^{re.escape(a.strip('/'))}/?$ {b} [L,R=301]" for a, b in mapa["r301"] if a != "/"]
+                    + [f"RewriteRule ^{re.escape(a.strip('/'))}/?$ - [G,L]" for a in mapa["r410"]]
+                    + [f"RewriteRule ^{re.escape(a)}/?$ {b} [L,R=301]" for a, b in REDIRECCIONES]) or "# (ninguna)"
+    red2 = "\n".join(f"RewriteRule ^{re.escape(a)}/?$ {b} [L,R=302]" for a, b in REDIRECCIONES_302) or "# (ninguna)"
     sust = {"__NOMBRE__": N["nombre"], "__DOMINIO__": DOMINIO, "__HOST_SIN_WWW__": host.removeprefix("www."),
-            "__CONTACTO__": URLS["contacto"], "__R301__": r301, "__R410__": r410, "__EMAIL__": N["email"], "__MAX__": str(FOTO_MAX_MB)}
+            "__HOST__": host, "__CONTACTO__": URLS["contacto"], "__REDIRECCIONES_302__": red2, "__REDIRECCIONES__": red, "__EMAIL__": N["email"],
+            "__MAX__": str(FOTO_MAX_MB)}
     h, e = HTACCESS, ENVIAR
     for k, v in sust.items():
         h, e = h.replace(k, v), e.replace(k, v)
+    if not host.startswith("www."):
+        pass  # dominio sin www: la regla de arriba quita el www
+    else:  # dominio con www: se fuerza el www en lugar de quitarlo
+        h = h.replace("# Sin www (paso 18)\nRewriteCond %{HTTP_HOST} ^www\\. [NC]", "# Con www (paso 18)\nRewriteCond %{HTTP_HOST} !^www\\. [NC]")
     open(S(".htaccess"), "w").write(h)
-    # Vista previa en Vercel (paso 23): nada se indexa en *.vercel.app. En el hosting del cliente manda el .htaccess.
+    open(S("enviar.php"), "w").write(e)
+    # Vista previa en Vercel: nada se indexa en *.vercel.app (en el hosting del cliente manda el .htaccess)
     open(S("vercel.json"), "w").write(json.dumps({"cleanUrls": False, "trailingSlash": True,
         "headers": [{"source": "/(.*)", "headers": [{"key": "X-Robots-Tag", "value": "noindex, nofollow"}]}]}, indent=1))
-    open(S("enviar.php"), "w").write(e)
 
 
 DIAS_N = {"Sunday": 0, "Monday": 1, "Tuesday": 2, "Wednesday": 3, "Thursday": 4, "Friday": 5, "Saturday": 6}
 
 
 def js():
-    """main.js del cliente con sus datos (tramos de horario, festivos, dominio, clave de cookies, textos del estado)."""
+    """main.js del cliente con sus datos (horario, festivos, dominio, clave de cookies, textos del estado)."""
+    N_ = N
     hosts = "|".join(re.escape(h) for h in HOST_PRODUCCION).replace("\\", "\\\\")
-    mins = lambda x: int(x[:2]) * 60 + int(x[3:])
-    sust = {"__HOSTS_RE__": hosts, "__COOKIES__": COOKIES_CLAVE, "__TZ__": N["zona_horaria"],
-            "__FESTIVOS__": json.dumps(N["festivos"]), "__PASCUA__": json.dumps(N.get("festivos_pascua", [])),
-            "__DIAS_N__": json.dumps([DIAS_N[d] for d in N["dias_schema"]]),
-            "__TRAMOS__": json.dumps([[mins(a), mins(c)] for a, c in N["tramos"]]),
+    sust = {"__HOSTS_RE__": hosts, "__COOKIES__": COOKIES_CLAVE, "__TZ__": N_["zona_horaria"],
+            "__FESTIVOS__": json.dumps(N_["festivos"]), "__PASCUA__": json.dumps(N_.get("festivos_pascua", [])),
+            "__DIAS_N__": json.dumps([DIAS_N[d] for d in N_["dias_schema"]]),
+            "__ABRE_H__": str(int(N_["abre"][:2])), "__CIERRA_H__": str(int(N_["cierra"][:2])),
+            "__TRAMOS__": json.dumps([[int(a[:2]) * 60 + int(a[3:]), int(c[:2]) * 60 + int(c[3:])] for a, c in N_["tramos"]]),
             "__ESTADO_ABIERTO__": json.dumps(texto("estado_abierto"), ensure_ascii=False),
-            "__ESTADO_FUERA__": json.dumps(texto("estado_fuera"), ensure_ascii=False)}
+            "__ESTADO_FUERA__": json.dumps(texto("estado_fuera"), ensure_ascii=False),
+            "__PROMESA_ABIERTO__": json.dumps(texto("promesa_abierto"), ensure_ascii=False),
+            "__PROMESA_ANTES__": json.dumps(texto("promesa_antes"), ensure_ascii=False),
+            "__PROMESA_SIGUIENTE__": json.dumps(texto("promesa_siguiente", dia="{dia}"), ensure_ascii=False)}
     j = open(R("cliente", "js", "main.js"), encoding="utf-8").read()
     for k, v in sust.items():
         j = j.replace(k, v)

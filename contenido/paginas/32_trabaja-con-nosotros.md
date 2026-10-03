@@ -9,7 +9,7 @@ Entrada corta: Albañiles y fontaneros con ganas de quedarse: contrato indefinid
 
 Solvento, empresa de instalaciones con nave en Leganés, busca albañiles y fontaneros dispuestos a trabajar con amianto en edificios del sur de Madrid. Ofrece contrato indefinido, horario de lunes a viernes, furgoneta de empresa y formación en amianto pagada para todos los que entran, también los pintores. Puede apuntarse con el formulario o llamando al 910 06 70 60.
 
-(FOTO: dos operarios con equipo de protección junto a una bajante nueva en un patio de luces — trabajo-albanil-fontanero-leganes.jpg)
+(FOTO: albañil extendiendo cemento cola junto a azulejos nuevos — albanileria-tras-averia-comunidad-alcorcon.jpg)
 
 ## ¿Qué ofrece Solvento a un albañil o a un fontanero?
 

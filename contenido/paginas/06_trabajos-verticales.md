@@ -39,7 +39,7 @@ Lo que no hacemos son fachadas. Nuestros trabajos verticales son para llegar a l
 
 El resto de trabajos que hacemos para comunidades está en [LINK la página para administradores de fincas](/administradores-de-fincas/) 🆕.
 
-Para el presupuesto, [LINK mándenos una foto de la zona desde abajo o desde la cubierta](/contacto/) 🔗.
+[LINK Cuéntenos qué hay que hacer](/contacto/) 🔗 y, si puede, adjunte una foto de la zona desde abajo o desde la cubierta.
 
 ---
 FAQ
