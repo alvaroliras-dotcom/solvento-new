@@ -14,6 +14,7 @@ export function soporta() {
 }
 
 /* opts: { svg: url o texto del SVG, color: "#hex" (si se da, pinta todo de ese color), quieto: bool,
+           raton: false para que no siga al ratón (Solvento: la gota cuelga y gotea, no persigue el cursor),
            giro: [x, y] (pose fija para la foto), listo: fn } */
 export async function montar(caja, opts) {
   opts = opts || {};
@@ -58,13 +59,20 @@ export async function montar(caja, opts) {
   let mx = 0, my = 0, vivo = true, visible = true, raf = 0;
   const alMover = e => { mx = e.clientX / innerWidth - .5; my = e.clientY / innerHeight - .5; };
   const alCambiar = () => { r.setSize(W(), H()); encuadra(); if (opts.quieto) pinta(0); };
-  addEventListener("pointermove", alMover, { passive: true });
+  const conRaton = opts.raton !== false;
+  if (conRaton) addEventListener("pointermove", alMover, { passive: true });
   addEventListener("resize", alCambiar);
   const io = "IntersectionObserver" in window ? new IntersectionObserver(e => { visible = e[e.length - 1].isIntersecting; if (visible && vivo) bucle(); }) : null;
   if (io) io.observe(caja);
   const t0 = performance.now();
   function pinta(t) {
     if (opts.quieto) { piv.rotation.set((opts.giro || [-.12, .45])[0], (opts.giro || [-.12, .45])[1], 0); }
+    else if (!conRaton) {
+      /* Gota que cuelga: se balancea poco, se estira al cargarse y cae un pelo cada ~4 s */
+      const g0 = opts.giro || [-.12, .45], c = (t % 4.2) / 4.2, carga = c < .8 ? c / .8 : 1 - (c - .8) / .2;
+      piv.rotation.y = g0[1] + Math.sin(t * .35) * .18; piv.rotation.x = g0[0] + Math.sin(t * .5) * .05;
+      piv.scale.set(1 - carga * .04, 1 + carga * .07, 1); piv.position.y = -carga * 4;
+    }
     else { const g0 = opts.giro || [-.12, .45]; piv.rotation.y = g0[1] + Math.sin(t * .55) * .55 + mx * .5; piv.rotation.x = g0[0] + Math.sin(t * .8) * .1 + my * .3; piv.position.y = Math.sin(t * 1.1) * 3; }
     r.render(sc, cam);
   }

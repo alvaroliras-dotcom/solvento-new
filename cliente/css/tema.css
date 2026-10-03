@@ -235,3 +235,17 @@ select:focus{outline:2px solid var(--acento);outline-offset:1px;border-color:tra
 
 /* El móvil no se ensancha con la pista de pasos: sin esto la página medía 1.560 px y la cabecera y el menú quedaban fuera de la pantalla */
 .amianto-sec:not(.clavada) .pasosa{contain:paint}
+
+/* Solvento · La bajante del margen (main.js «bajante»): tubería, agua, juntas por planta y la gota que cae */
+.bajante{position:fixed;left:20px;top:0;bottom:0;width:24px;z-index:40;pointer-events:none;opacity:0;transition:opacity .6s}
+.bajante.on{opacity:1}
+.bajante__tubo,.bajante__agua{position:absolute;left:9px;width:6px;border-radius:3px}
+.bajante__tubo{background:rgba(0,116,122,.10);box-shadow:inset 0 0 0 1px rgba(0,116,122,.22)}
+.bajante__agua{height:0;background:linear-gradient(180deg,rgba(0,175,170,.25),#00AFAA);box-shadow:0 0 10px rgba(0,175,170,.35)}
+.bajante__junta{position:absolute;left:4px;width:16px;height:5px;margin-top:-2px;border-radius:3px;background:#b9cfcf;transition:background .35s,transform .35s}
+.bajante__junta.on{background:#00747A;transform:scaleX(1.2)}
+.bajante__gota{position:absolute;left:-1px;top:0;width:27px;height:40px;color:#fff;will-change:transform;filter:drop-shadow(0 3px 5px rgba(0,59,62,.28))}
+.bajante__gota svg{width:100%;height:100%;display:block;transform-origin:50% 100%;overflow:visible}
+.bajante__relleno{fill:#00AFAA}
+.bajante__gota.cae svg{animation:gota-cae .45s cubic-bezier(.3,1.6,.5,1)}
+@keyframes gota-cae{0%{transform:scale(1.18,.78)}55%{transform:scale(.9,1.12)}100%{transform:scale(1,1)}}

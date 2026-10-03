@@ -1,0 +1,16 @@
+SOLVENTO · WEB v2 COMPLETA · 03/10/2026
+Incluye: retoque de cabecera y logotipo + la gota que baja por la bajante.
+
+Tres tandas con TODA la web, cada una de menos de 100 archivos y 25 MB:
+  solvento-tanda1.zip   código, contenido y recursos
+  solvento-tanda2.zip   resto de recursos y primera parte de sitio
+  solvento-tanda3.zip   resto de sitio
+
+Cómo se sube (GitHub, Add file > Upload files), en orden 1, 2, 3:
+  abre cada zip y arrastra JUNTAS las carpetas y archivos que ves dentro, nunca lo que hay dentro de ellas.
+  GitHub no sube los archivos que empiezan por punto (.htaccess, .gitignore): es normal.
+
+Vercel: Root Directory = sitio, Framework «Other», sin comando de build.
+
+01-PROTOCOLO-WEB-v11.md: el protocolo vigente (no se sube a GitHub).
+La copia de trabajo completa del repositorio está en 08-WEB/solvento-web-v2 (no se sube).
