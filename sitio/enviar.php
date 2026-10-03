@@ -6,7 +6,7 @@
 header('X-Robots-Tag: noindex');
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') { header('Location: /contacto/'); exit; }
 $c = function ($k, $max) { return trim(mb_substr(strip_tags($_POST[$k] ?? ''), 0, $max)); };
-$tipo = ($_POST['tipo'] ?? '') === 'empleo' ? 'empleo' : 'presupuesto';
+$tipo = in_array($_POST['tipo'] ?? '', ['empleo', 'llamada'], true) ? $_POST['tipo'] : 'presupuesto';
 $pagina = $c('pagina', 120);
 if (!preg_match('#^/[a-z0-9\-/]*$#', $pagina) || strpos($pagina, '//') !== false) { $pagina = '/contacto/'; }
 $nombre = $c('nombre', 80); $telefono = $c('telefono', 20); $correo = $c('correo', 120); $donde = $c('donde', 160);
@@ -34,10 +34,15 @@ if ($motivo === '' && !empty($_FILES['foto']) && is_array($_FILES['foto']['name'
     $adj[] = ['nombre' => 'adjunto-' . ($i + 1) . '.' . $tipos_ok[$mime], 'mime' => $mime, 'datos' => file_get_contents($tmp)];
   }
 }
-$vuelta = $tipo === 'empleo' ? '/trabaja-con-nosotros/' : '/contacto/';
-if ($motivo !== '') { header('Location: ' . $vuelta . '?enviado=0&motivo=' . $motivo . '#form-error'); exit; }
+$vuelta = $tipo === 'empleo' ? '/trabaja-con-nosotros/' : ($tipo === 'llamada' ? $pagina : '/contacto/');
+$clave = $tipo === 'llamada' ? 'llamada' : 'enviado';
+$ancla_ok = $tipo === 'llamada' ? '#te-llamamos' : '#form-ok'; $ancla_ko = $tipo === 'llamada' ? '#te-llamamos' : '#form-error';
+if ($motivo !== '') { header('Location: ' . $vuelta . '?' . $clave . '=0&motivo=' . $motivo . $ancla_ko); exit; }
 $para = 'info@solvento.es';
-if ($tipo === 'empleo') {
+if ($tipo === 'llamada') {
+  $asunto = 'QUE ME LLAMEN · ' . $nombre . ' · ' . $telefono;
+  $cuerpo = "Petición de llamada desde la web.\n\nNombre: $nombre\nTeléfono: $telefono\nPágina: https://solvento.es$pagina\n";
+} elseif ($tipo === 'empleo') {
   $asunto = 'CANDIDATURA · ' . $nombre . ' · ' . $oficio;
   $cuerpo = "Candidatura desde la web.\n\nNombre: $nombre\nTeléfono: $telefono\nOficio: $oficio\nAños de experiencia: $anios\nMunicipio: $donde\n\n$mensaje\n";
 } else {
@@ -54,4 +59,4 @@ foreach ($adj as $a) {
 }
 $m .= "--$sep--";
 $enviado = @mail($para, $asunto, $m, $cab);
-header('Location: ' . $vuelta . '?enviado=' . ($enviado ? '1#form-ok' : '0&motivo=envio#form-error'));
+header('Location: ' . $vuelta . '?' . $clave . '=' . ($enviado ? '1' . $ancla_ok : '0&motivo=envio' . $ancla_ko));
