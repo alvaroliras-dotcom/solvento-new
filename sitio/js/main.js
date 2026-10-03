@@ -31,6 +31,71 @@
   var subir = d.querySelector("[data-subir]");
   w.addEventListener("scroll", alScroll, { passive: true }); alScroll();
 
+  /* ---------- Solvento · La bajante: una gota cae por una tubería del margen, planta a planta, con el scroll ----------
+     Solo ordenador ancho con ratón y sin movimiento reducido. Cada H2 es una «planta»: la gota se queda en su junta
+     y cae acelerando hasta la siguiente. El agua llena la tubería detrás de ella. Al llegar al pie, se apaga y la
+     gota grande del pie cae en su sitio. Decorativa: aria-hidden. */
+  (function bajante() {
+    if (reducido || !raton || !w.matchMedia("(min-width: 1100px)").matches) return;
+    var main = d.querySelector("main"), pie = d.querySelector(".pie");
+    if (!main) return;
+    var NS = "http://www.w3.org/2000/svg";
+    var b = d.createElement("div"); b.className = "bajante"; b.setAttribute("aria-hidden", "true");
+    b.innerHTML = '<span class="bajante__tubo"></span><span class="bajante__agua"></span><span class="bajante__juntas"></span>' +
+      '<span class="bajante__gota"><svg viewBox="0 0 356.5 531.0" focusable="false"><path class="bajante__relleno" d="M178.25 6C150 50 4 238 4 352a174.25 174.25 0 0 0 348.5 0C352.5 238 206.5 50 178.25 6z"/><use href="#simbolo-m"/></svg></span>';
+    d.body.appendChild(b);
+    var tubo = b.querySelector(".bajante__tubo"), agua = b.querySelector(".bajante__agua"), juntasC = b.querySelector(".bajante__juntas"),
+        gota = b.querySelector(".bajante__gota"), esHome = !!d.querySelector(".hero--galeria");
+    var arriba = 0, largo = 0, paradas = [], juntas = [], y = -1, idx = -1, alto = 40;
+    function medir() {
+      var vh = w.innerHeight, docH = d.documentElement.scrollHeight - vh;
+      arriba = 120; largo = Math.max(100, vh - arriba - 56);
+      tubo.style.top = agua.style.top = arriba + "px"; tubo.style.height = largo + "px";
+      paradas = [0];
+      main.querySelectorAll("h2").forEach(function (h) {
+        if (!h.offsetParent) return;
+        var t = h.getBoundingClientRect().top + w.scrollY - vh * .45;
+        var p = docH > 0 ? Math.min(1, Math.max(0, t / docH)) : 0;
+        if (p - paradas[paradas.length - 1] > .06) paradas.push(p);
+      });
+      if (paradas[paradas.length - 1] < .995) paradas.push(1);
+      juntasC.innerHTML = ""; juntas = paradas.map(function (p) {
+        var j = d.createElement("span"); j.className = "bajante__junta"; j.style.top = (arriba + p * largo) + "px"; juntasC.appendChild(j); return j;
+      });
+      idx = -1;
+    }
+    function objetivo() {
+      var docH = d.documentElement.scrollHeight - w.innerHeight, p = docH > 0 ? Math.min(1, Math.max(0, w.scrollY / docH)) : 0;
+      for (var k = 0; k < paradas.length - 1; k++) {
+        if (p <= paradas[k + 1]) {
+          var t = (p - paradas[k]) / (paradas[k + 1] - paradas[k] || 1);
+          return { p: paradas[k] + (paradas[k + 1] - paradas[k]) * t * t * t, k: t > .985 ? k + 1 : k };
+        }
+      }
+      return { p: 1, k: paradas.length - 1 };
+    }
+    function paso() {
+      var o = objetivo(), ty = arriba + o.p * largo - alto * .55;
+      y = y < 0 ? ty : y + (ty - y) * .2;
+      gota.style.transform = "translate3d(0," + y.toFixed(1) + "px,0)";
+      agua.style.height = Math.max(0, y + 4 - arriba).toFixed(1) + "px";
+      if (o.k !== idx) {
+        if (idx >= 0 && o.k > idx) { gota.classList.remove("cae"); void gota.offsetWidth; gota.classList.add("cae"); }
+        idx = o.k; juntas.forEach(function (j, i) { j.classList.toggle("on", i <= idx); });
+      }
+      var vh = w.innerHeight, piePos = pie ? pie.getBoundingClientRect().top : 1e9;
+      b.classList.toggle("on", (!esHome || w.scrollY > vh * .7) && piePos > vh * .55);
+      if (Math.abs(ty - y) > .3) requestAnimationFrame(paso); else corriendo = false;
+    }
+    var corriendo = false;
+    function pide() { if (!corriendo) { corriendo = true; requestAnimationFrame(paso); } }
+    medir(); pide();
+    w.addEventListener("scroll", pide, { passive: true });
+    w.addEventListener("resize", function () { medir(); pide(); });
+    w.addEventListener("load", function () { setTimeout(function () { medir(); pide(); }, 600); });
+    setTimeout(function () { medir(); pide(); }, 3500);
+  })();
+
   /* ---------- Menú a pantalla completa (R34) ---------- */
   var burger = d.querySelector(".cab__burger");
   function toggle(ab) {
@@ -396,7 +461,7 @@
       carga(["/js/vendor/objeto3d.min.js"], function () {
         if (!w.Objeto3D) return;
         w.Objeto3D.montar(el.querySelector(".objeto__lienzo"), {
-          svg: el.getAttribute("data-objeto3d"), color: el.getAttribute("data-color") || null,
+          svg: el.getAttribute("data-objeto3d"), color: el.getAttribute("data-color") || null, raton: false,
           listo: function () { requestAnimationFrame(function () { el.classList.add("con-3d"); }); }
         }).catch(function () {});
       });
@@ -521,14 +586,14 @@
     d.querySelectorAll(".foto-marco__in img").forEach(function (im) {
       G.fromTo(im, { yPercent: -8 }, { yPercent: 8, ease: "none", scrollTrigger: { trigger: im.closest(".foto-marco"), start: "top bottom", end: "bottom top", scrub: true } });
     });
-    /* La gota del pie entra de lado y gira un poco */
+    /* La gota del pie cae desde arriba: es la misma que ha bajado por la bajante */
     d.querySelectorAll("[data-pie-gota]").forEach(function (g) {
-      G.fromTo(g, { xPercent: 40, rotation: 18 }, { xPercent: 0, rotation: -6, ease: "none", scrollTrigger: { trigger: g.parentNode, start: "top bottom", end: "bottom bottom", scrub: true } });
+      G.fromTo(g, { yPercent: -45, scaleY: 1.12, scaleX: .92 }, { yPercent: 0, scaleY: 1, scaleX: 1, ease: "power2.in", scrollTrigger: { trigger: g.parentNode, start: "top bottom", end: "bottom bottom", scrub: true } });
     });
     /* Portada: el texto y los sellos salen hacia arriba al subir la galería; la gota se hace pequeña */
     var heroS = d.querySelector(".hero--galeria .portada-s"), galS = heroS && d.querySelector("[data-galeria]");
     if (galS && w.matchMedia("(min-width: 900px) and (min-height: 700px)").matches) {
-      G.to(heroS.querySelector(".objeto--portada"), { scale: .7, opacity: .25, ease: "none",
+      G.to(heroS.querySelector(".objeto--portada"), { yPercent: 60, scale: .45, opacity: 0, ease: "power2.in",
         scrollTrigger: { trigger: galS, start: "top 100%", end: "bottom 60%", scrub: true } });
     }
 
